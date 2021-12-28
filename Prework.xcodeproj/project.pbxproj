@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1637E206277A96DF000F36F4 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1637E205277A96DF000F36F4 /* SettingsViewController.swift */; };
 		164E6892277A5479003E8191 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164E6891277A5479003E8191 /* AppDelegate.swift */; };
 		164E6894277A5479003E8191 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164E6893277A5479003E8191 /* SceneDelegate.swift */; };
 		164E6896277A5479003E8191 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164E6895277A5479003E8191 /* ViewController.swift */; };
@@ -36,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1637E205277A96DF000F36F4 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		164E688E277A5479003E8191 /* Prework.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Prework.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		164E6891277A5479003E8191 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		164E6893277A5479003E8191 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -79,6 +81,7 @@
 		164E6885277A5479003E8191 = {
 			isa = PBXGroup;
 			children = (
+				1637E205277A96DF000F36F4 /* SettingsViewController.swift */,
 				164E6890277A5479003E8191 /* Prework */,
 				164E68A7277A547B003E8191 /* PreworkTests */,
 				164E68B1277A547B003E8191 /* PreworkUITests */,
@@ -261,6 +264,7 @@
 				164E6896277A5479003E8191 /* ViewController.swift in Sources */,
 				164E6892277A5479003E8191 /* AppDelegate.swift in Sources */,
 				164E6894277A5479003E8191 /* SceneDelegate.swift in Sources */,
+				1637E206277A96DF000F36F4 /* SettingsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
