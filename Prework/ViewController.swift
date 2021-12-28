@@ -28,7 +28,7 @@ class ViewController: UIViewController {
     @IBAction func get_tip_perc(_ sender: Any) {
         // Capture the user chosen percentage from the slider
         // Recalculates tip/bill based on new chosen tip percentage
-        let tip_perc = Int(tipPercentSlider.value * 100)
+        let tip_perc = Int(round(tipPercentSlider.value * 100))
         
         tipPercentOutput.text = String(format: "%2i%%", tip_perc)
         
