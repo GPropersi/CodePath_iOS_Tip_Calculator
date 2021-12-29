@@ -4,20 +4,22 @@
 //
 //  Created by Giovanni Propersi on 12/27/21.
 //
-// TODO: Set default values and user memory
-// TODO: GUI enhancements
+// TODO: GUI enhancements - keyboard present on load, 
 
 import UIKit
 
 class ViewController: UIViewController {
     
     let defaults = UserDefaults.standard
+    let USER_DEFINED_TIP = "UserDefinedTip"
+    let USER_DEFINED_MAX = "UserDefinedMax"
 
     @IBOutlet weak var billAmountTextField: UITextField!
     @IBOutlet weak var tipAmountLabel: UILabel!
     @IBOutlet weak var totalLabel: UILabel!
     @IBOutlet weak var tipPercentSlider: UISlider!
     @IBOutlet weak var tipPercentOutput: UILabel!
+    @IBOutlet weak var maxSliderLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,15 +30,14 @@ class ViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        let default_tip = Int(defaults.string(forKey: "UserDefinedTip")!) ?? 25
-        print("User default tip is: \(default_tip)")
         
+        // Retrieve default/user preferred values for max and default tip
+        let default_tip = Int(defaults.string(forKey: USER_DEFINED_TIP)!) ?? 25
+        let default_max = Int(defaults.string(forKey:  USER_DEFINED_MAX)!) ?? 50
+
+        set_slider_max(default_max)
         set_tip_slider_selected_value(default_tip)
         set_tip_percent_label(default_tip)
-        
-        //get_tip_perc(self)
-        // This is a good place to retrieve the default tip percentage from UserDefaults
-        // and use it to update the tip amount
     }
     
     @IBAction func get_tip_perc(_ sender: Any) {
@@ -74,6 +75,12 @@ class ViewController: UIViewController {
         // Update the total label
         totalLabel.text = String(format: "$%.2f", total)
         
+    }
+    
+    func set_slider_max(_ max_tip: Int) {
+        // Update slider max label, and the slider itself with the max value
+        maxSliderLabel.text = "\(max_tip)" + "%"
+        tipPercentSlider.maximumValue = Float(max_tip) / 100.0
     }
     
     func set_tip_slider_selected_value(_ default_tip: Int) {
