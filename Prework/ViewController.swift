@@ -28,8 +28,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var tipPercentOutput: UILabel!
     @IBOutlet weak var maxSliderLabel: UILabel!
     
-
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -50,7 +48,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         set_slider_max(default_max)
         set_tip_slider_selected_value(default_tip)
         set_tip_percent_label(default_tip)
-        
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -59,21 +56,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
         current_text_field.text = "$"
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        print("Hit this")
-    }
-    
     @IBAction func get_tip_perc(_ sender: Any) {
         // Capture the user chosen percentage from the slider
         // Recalculates tip/bill based on new chosen tip percentage
-        print("Hit this block")
         
         let slider_tip = Int(round(tipPercentSlider.value * 100))
-        
         set_tip_percent_label(slider_tip)
-        
         calculateTip(self)
-        
     }
 
     @IBAction func calculateTip(_ sender: Any) {
@@ -98,7 +87,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
         
         bill_amount = bill_amount.replacingOccurrences(of: "$", with: "")
-        bill_amount = bill_amount.replacingOccurrences(of: ".", with: "")
         
         let bill = Double(bill_amount) ?? 0
         
@@ -134,7 +122,5 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Set the tip percent label based on user preferred value, or default value
         tipPercentOutput.text = String(format: "%2i%%", tip_for_label)
     }
-    
-
 }
 
