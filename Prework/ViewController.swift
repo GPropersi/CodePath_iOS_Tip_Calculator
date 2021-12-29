@@ -10,10 +10,11 @@
 import UIKit
 
 class ViewController: UIViewController {
+    
+    let defaults = UserDefaults.standard
 
     @IBOutlet weak var billAmountTextField: UITextField!
     @IBOutlet weak var tipAmountLabel: UILabel!
-    @IBOutlet weak var tipControl: UISegmentedControl!
     @IBOutlet weak var totalLabel: UILabel!
     @IBOutlet weak var tipPercentSlider: UISlider!
     @IBOutlet weak var tipPercentOutput: UILabel!
@@ -25,14 +26,27 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        let default_tip = Int(defaults.string(forKey: "UserDefinedTip")!) ?? 25
+        print("User default tip is: \(default_tip)")
+        
+        set_tip_slider_selected_value(default_tip)
+        set_tip_percent_label(default_tip)
+        
+        //get_tip_perc(self)
+        // This is a good place to retrieve the default tip percentage from UserDefaults
+        // and use it to update the tip amount
+    }
+    
     @IBAction func get_tip_perc(_ sender: Any) {
         // Capture the user chosen percentage from the slider
         // Recalculates tip/bill based on new chosen tip percentage
-        let tip_perc = Int(round(tipPercentSlider.value * 100))
+        print("Hit this block")
         
-        tipPercentOutput.text = String(format: "%2i%%", tip_perc)
+        let slider_tip = Int(round(tipPercentSlider.value * 100))
         
-        change_segment_tips(tip_perc)
+        set_tip_percent_label(slider_tip)
         
         calculateTip(self)
         
@@ -62,31 +76,14 @@ class ViewController: UIViewController {
         
     }
     
-    func change_segment_tips(_ slider_tip: Int) {
-        // Changes the segments based on the slider tips
-        // If tip percent is >= Max Tip - 5, then slider segments are
-        // set to [Max - 5, Max - 2, Max]
-        // If tip percent <= Min tip, then force slider segments to be 0, 3, and 5
-        
-        // Change this to user default setting value
-        let max_tip = 50
-        var new_tips: [String] = []
-        
-        // Better way to do this? Forces segments based on 3 sets of conditions
-        if slider_tip >= max_tip - 5 {
-            new_tips = [String(format: "%2i%%", max_tip - 5), String(format: "%2i%%", max_tip - 2), String(format: "%2i%%", max_tip)]
-        }
-        else if slider_tip <= 5 {
-            new_tips = ["0%", "3%", "5%"]
-        }
-        else {
-            new_tips = [String(format: "%2i%%", slider_tip - 5), String(format: "%2i%%", slider_tip - 2), String(format: "%2i%%", slider_tip)]
-        }
-
-        for segment in new_tips.indices {
-            tipControl.setTitle(new_tips[segment], forSegmentAt: segment)
-        }
-
+    func set_tip_slider_selected_value(_ default_tip: Int) {
+        // Set the tip slider selected value based user preferred value, or default value
+        tipPercentSlider.value = Float(default_tip) / 100.0
+    }
+    
+    func set_tip_percent_label(_ tip_for_label: Int) {
+        // Set the tip percent label based on user preferred value, or default value
+        tipPercentOutput.text = String(format: "%2i%%", tip_for_label)
     }
     
 
