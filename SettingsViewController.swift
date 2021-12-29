@@ -37,9 +37,9 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         // When ending editing for the two settings, add % to the
-        // textfields. Run comparisons to verify valid inputs for max and
-        // default tip percentages.
+        // textfields. Run comparisons to verify valid inputs for max and default tip percentages.
         // https://developer.apple.com/documentation/uikit/uitextfielddelegate/1619591-textfielddidendediting
+        // Border editing - https://stackoverflow.com/questions/53682936/how-to-change-uitextfield-border-when-selected/53683159
     
         let current_text_field = textField
         let current_tip_default = defaults.string(forKey: USER_DEFINED_TIP)

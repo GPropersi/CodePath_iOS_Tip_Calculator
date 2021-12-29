@@ -4,7 +4,7 @@
 //
 //  Created by Giovanni Propersi on 12/27/21.
 //
-// TODO: GUI enhancements - keyboard present on load, 
+// TODO: GUI enhancements - keyboard present on load,
 
 import UIKit
 
@@ -25,6 +25,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         self.title = "Tip Calculator"
+        billAmountTextField.becomeFirstResponder()
         // Do any additional setup after loading the view.
     }
     
@@ -38,6 +39,7 @@ class ViewController: UIViewController {
         set_slider_max(default_max)
         set_tip_slider_selected_value(default_tip)
         set_tip_percent_label(default_tip)
+        
     }
     
     @IBAction func get_tip_perc(_ sender: Any) {
