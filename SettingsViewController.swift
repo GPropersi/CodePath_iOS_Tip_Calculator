@@ -12,11 +12,17 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     let defaults = UserDefaults.standard
     let USER_DEFINED_TIP = "UserDefinedTip"
     let USER_DEFINED_MAX = "UserDefinedMax"
+    let USER_DEFINED_APPEARANCE = "UserDefinedAppearance"
+    let VIEW_MODE: [String : UIUserInterfaceStyle] = [
+        "Dark": .dark,
+        "Light" : .light
+    ]
 
     @IBOutlet weak var defaultTip: UITextField!
     @IBOutlet weak var defaultMaxTip: UITextField!
     @IBOutlet weak var defaultTipError: UILabel!
     @IBOutlet weak var maxTipError: UILabel!
+    @IBOutlet weak var darkModeToggle: UISwitch!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,7 +38,22 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         defaultMaxTip.text = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
         defaultMaxTip.text = defaultMaxTip.text! + "%"
         
+        let dark_or_light = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
+        
+        setViewMode(dark_or_light)
+        setTitleTextColor(dark_or_light)
+        
         // Do any additional setup after loading the view.
+    }
+    
+    func setTitleTextColor(_ dark_or_white: String) {
+        // Set title color depending on "Light" or "Dark"
+        if dark_or_white == "Light" {
+            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+        }
+        else {
+            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        }
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -105,6 +126,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
                 // Tip max can't be less than tip max
                 current_text_field.layer.borderColor = UIColor.red.cgColor
                 current_text_field.layer.borderWidth = 2.0
+                maxTipError.text = "Max tip cannot less than default tip."
                 defaultMaxTip.text = current_tip_max! + "%"
                 return
             }
@@ -134,6 +156,38 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         // Set auto-return key on the textbox
         textField.resignFirstResponder()
         return true
+    }
+    
+    @IBAction func setUserDefaultViewMode(_ sender: Any) {
+        // Set user default view mode based on change toggle value
+        if darkModeToggle.isOn {
+            defaults.set("Dark", forKey: USER_DEFINED_APPEARANCE)
+            overrideUserInterfaceStyle = VIEW_MODE["Dark"]!
+            setTitleTextColor("Dark")
+            defaultTip.backgroundColor = UIColor.systemGray2
+            defaultMaxTip.backgroundColor = UIColor.systemGray2
+        }
+        else {
+            defaults.set("Light", forKey: USER_DEFINED_APPEARANCE)
+            overrideUserInterfaceStyle = VIEW_MODE["Light"]!
+            setTitleTextColor("Light")
+            defaultTip.backgroundColor = UIColor.systemBackground
+            defaultMaxTip.backgroundColor = UIColor.systemBackground
+        }
+    }
+    
+    func setViewMode(_ dark_or_light: String) {
+        // Sets the view mode for dark or light
+        if dark_or_light == "Dark" {
+            darkModeToggle.setOn(true, animated: true)
+            overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
+            defaultTip.backgroundColor = UIColor.systemGray2
+            defaultMaxTip.backgroundColor = UIColor.systemGray2
+        }
+        else {
+            darkModeToggle.setOn(false, animated: false)
+            overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
+        }
     }
 
     /*

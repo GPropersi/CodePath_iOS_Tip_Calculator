@@ -20,6 +20,12 @@ class ViewController: UIViewController, UITextFieldDelegate {
     let defaults = UserDefaults.standard
     let USER_DEFINED_TIP = "UserDefinedTip"
     let USER_DEFINED_MAX = "UserDefinedMax"
+    let USER_DEFINED_APPEARANCE = "UserDefinedAppearance"
+    let VIEW_MODE: [String : UIUserInterfaceStyle] = [
+        "Dark": .dark,
+        "Light" : .light
+    ]
+    
 
     @IBOutlet weak var billAmountTextField: UITextField!
     @IBOutlet weak var tipAmountLabel: UILabel!
@@ -28,13 +34,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var tipPercentOutput: UILabel!
     @IBOutlet weak var maxSliderLabel: UILabel!
     
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         
         billAmountTextField.delegate = self
         
         self.title = "Tip Calculator"
+        
         billAmountTextField.becomeFirstResponder()
+        
+        
         // Do any additional setup after loading the view.
     }
     
@@ -44,10 +56,28 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Retrieve default/user preferred values for max and default tip
         let default_tip = Int(defaults.string(forKey: USER_DEFINED_TIP)!) ?? 25
         let default_max = Int(defaults.string(forKey:  USER_DEFINED_MAX)!) ?? 50
+        let default_view_mode = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
+        
+        // Set dark or light mode
+        overrideUserInterfaceStyle = VIEW_MODE[default_view_mode]!
+        
+        // Set title color depending on dark or light mode
+        //https://stackoverflow.com/questions/26008536/navigationbar-bar-tint-and-title-text-color-in-ios-8
+        setTitleTextColor(default_view_mode)
 
         set_slider_max(default_max)
         set_tip_slider_selected_value(default_tip)
         set_tip_percent_label(default_tip)
+    }
+    
+    func setTitleTextColor(_ dark_or_white: String) {
+        // Set title color depending on "Light" or "Dark"
+        if dark_or_white == "Light" {
+            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+        }
+        else {
+            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        }
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
