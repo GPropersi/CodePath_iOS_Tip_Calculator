@@ -65,6 +65,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     
     func addDoneToKeyboard(_ frame: UITextField) {
         // Add done to the keyboard for each input option
+        // https://www.youtube.com/watch?v=M_fP2i0tl0Q
         view.addSubview(frame)
         let toolBar = UIToolbar(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 50))
         

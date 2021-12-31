@@ -57,7 +57,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         let default_tip = Int(defaults.string(forKey: USER_DEFINED_TIP) ?? "25")
         let default_max = Int(defaults.string(forKey:  USER_DEFINED_MAX) ?? "50")
         let default_view_mode = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
-        let smooth_slider_setting = defaults.bool(forKey: SLIDER_SETTING)
         
         // Set unsafe area to system background color
         // https://developer.apple.com/forums/thread/682420
@@ -84,8 +83,15 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        // Couldn't figure out how to lock view in portrait mode without code below
+        // https://stackoverflow.com/questions/40413567/overriding-shouldautorotate-not-working-in-swift-3
+        super.viewDidAppear(animated)
+        AppDelegate.AppUtility.lockOrientation(.portrait)
+    }
+    
     func setDarkOrLightModeSettings(_ chosen_view_mode: String) {
-        // Sets the view to chosen mode, and alters text to match the mode
+        // Sets the view to chosen dark/light mode, and alters text to match the mode. Default is Light mode
         overrideUserInterfaceStyle = VIEW_MODE[chosen_view_mode]!
         
         let LABELS : [UILabel] = [tipAmountLabel, totalLabel, tipPercentOutput]
@@ -113,8 +119,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         let current_time = Int(Date().timeIntervalSince1970)
         
         if current_time - last_bill_time < 600 {
-            // Less than 10 minutes have passed since last restart,
-            // use previous bill entry
+            // Less than 10 minutes have passed since last restart, use previous bill entry
             billAmountTextField.text = String(last_bill)
             calculateTip(billAmountTextField)
         }
@@ -151,8 +156,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         let period_occ: Int = bill_amount.numberOfOccurrencesOf(string: ".")
         
-        if period_occ > 1 {
-            // Not allow user to enter more than one period
+        guard period_occ <= 1 else {
+            // Do not allow user to enter more than one period
             billAmountTextField.text = String(bill_amount.dropLast(1))
             return
         }
@@ -160,6 +165,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Create array with strings before and after period. User should not be inputting
         // values with more than two digits after period. Check for this.
         let strings_with_period = bill_amount.split(separator: ".")
+
         if strings_with_period.count > 1 && strings_with_period[1].count > 2{
             billAmountTextField.text = String(bill_amount.dropLast(1))
             return
