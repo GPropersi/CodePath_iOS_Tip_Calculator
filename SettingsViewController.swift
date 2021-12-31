@@ -78,21 +78,6 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         frame.inputAccessoryView = toolBar
     }
     
-    func setDarkOrLightModeSettings(_ dark_or_light: String) {
-        // Set dark or light mode settings
-    }
-    
-    func setTitleTextColor(_ dark_or_white: String) {
-        // Set title color depending on "Light" or "Dark"
-        if dark_or_white == "Light" {
-            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
-        }
-        else {
-            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
-        }
-    }
-    
-    
     @IBAction func defaultTipEndedEditing(_ sender: UITextField) {
         // When ending editing for the default tip textbox, add % to the
         // textfields. Run comparisons to verify valid input for default tip percentages.
