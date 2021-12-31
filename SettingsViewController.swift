@@ -31,6 +31,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         defaultTip.delegate = self
         defaultMaxTip.delegate = self
         
+        // "Done" button above keyboard for accepting user input values
+        // https://www.youtube.com/watch?v=M_fP2i0tl0Q
+        addDoneToKeyboard(defaultTip)
+        addDoneToKeyboard(defaultMaxTip)
+        
         // Set to user defined tip if previously defined
         defaultTip.text = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
         defaultTip.text = defaultTip.text! + "%"
@@ -44,6 +49,26 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         setTitleTextColor(dark_or_light)
         
         // Do any additional setup after loading the view.
+    }
+    
+    @objc private func didTapDone() {
+        defaultTip.resignFirstResponder()
+        defaultMaxTip.resignFirstResponder()
+    }
+    
+    func addDoneToKeyboard(_ frame: UITextField) {
+        // Add done to the keyboard for each input option
+        view.addSubview(frame)
+        let toolBar = UIToolbar(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 50))
+        
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace,
+                                            target: self,
+                                            action: nil)
+        
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(didTapDone))
+        toolBar.items = [flexibleSpace, doneButton]
+        toolBar.sizeToFit()
+        frame.inputAccessoryView = toolBar
     }
     
     func setTitleTextColor(_ dark_or_white: String) {
@@ -63,71 +88,79 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         // Border editing - https://stackoverflow.com/questions/53682936/how-to-change-uitextfield-border-when-selected/53683159
     
         let current_text_field = textField
-        let current_tip_default = defaults.string(forKey: USER_DEFINED_TIP)
-        let current_tip_max = defaults.string(forKey: USER_DEFINED_MAX)
+        
+        // Pull current valid inputs of default tip and max tip for comparison
+        let current_tip_default = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
+        let current_tip_max = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
         
         if current_text_field == defaultTip {
+            // Validation of Default Tip input
+            // Default tip cannot be greater than max tip, and cannot be less than 0
             
             var current_text_field_text = textField.text ?? current_tip_default
             
             if current_text_field_text == "" {
                 // User switched field input boxes, restore previously used value
-                current_text_field.text = current_tip_default! + "%"
+                current_text_field.text = current_tip_default + "%"
                 return
             }
             
-            current_text_field_text = current_text_field_text!.replacingOccurrences(of: "%", with: "")
+            current_text_field_text = current_text_field_text.replacingOccurrences(of: "%", with: "")
             
-            let current_text_field_integer = Int(current_text_field_text!)!
+            // Get the user's input for default tip
+            let current_text_field_integer = Int(current_text_field_text)!
             
-            if Int(current_tip_max!)! < current_text_field_integer {
+            if Int(current_tip_max)! < current_text_field_integer {
                 // Tip default can't be greater than tip max
                 current_text_field.layer.borderColor = UIColor.red.cgColor
                 current_text_field.layer.borderWidth = 2.0
                 defaultTipError.text = "Default tip greater than max."
-                defaultTip.text = current_tip_default! + "%"
+                defaultTip.text = current_tip_default + "%"
                 return
             }
             
-            else if current_text_field_integer < 0 || current_text_field_integer > 100 {
-                // User input tip percent cannot be below 0 or above 100
+            else if current_text_field_integer < 0 {
+                // User input tip percent cannot be below 0
                 current_text_field.layer.borderColor = UIColor.red.cgColor
                 current_text_field.layer.borderWidth = 2.0
-                defaultTipError.text = "Max tip less than default."
-                defaultTip.text = current_tip_default! + "%"
+                defaultTipError.text = "Default tip cannot be less than 0%."
+                defaultTip.text = current_tip_default + "%"
                 return
             }
             
             else {
-                // User input for default tip is valid, store in UserDefaults
-                current_text_field.layer.borderWidth = 0
-                defaultTipError.text = ""
+                // User input for default tip is valid, store in UserDefaults, display
+                current_text_field.layer.borderWidth = 0    // Clear error border
+                defaultTipError.text = ""                   // Clear error
                 defaults.set(current_text_field_text, forKey: USER_DEFINED_TIP)
-                defaultTip.text = current_text_field_text! + "%"
+                defaultTip.text = current_text_field_text + "%"
                 return
             }
         }
             
         else if current_text_field == defaultMaxTip {
+            // Validation of Max Tip input
+            // Max tip cannot be less than default tip, and cannot be less than 15 or greater than 100
             
             var current_text_field_text = textField.text ?? current_tip_max
             
             if current_text_field_text == "" {
                 // User switched field input boxes, restore previously used value
-                current_text_field.text = current_tip_max! + "%"
+                current_text_field.text = current_tip_max + "%"
                 return
             }
             
-            current_text_field_text = current_text_field_text!.replacingOccurrences(of: "%", with: "")
+            current_text_field_text = current_text_field_text.replacingOccurrences(of: "%", with: "")
             
-            let current_text_field_integer = Int(current_text_field_text!)!
+            // Get the user's input for max tip
+            let current_text_field_integer = Int(current_text_field_text)!
             
-            if Int(current_tip_default!)! > current_text_field_integer {
+            if Int(current_tip_default)! > current_text_field_integer {
                 // Tip max can't be less than tip max
                 current_text_field.layer.borderColor = UIColor.red.cgColor
                 current_text_field.layer.borderWidth = 2.0
-                maxTipError.text = "Max tip cannot less than default tip."
-                defaultMaxTip.text = current_tip_max! + "%"
+                maxTipError.text = "Max tip cannot be less than default tip."
+                defaultMaxTip.text = current_tip_max + "%"
                 return
             }
             
@@ -136,26 +169,19 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
                 current_text_field.layer.borderColor = UIColor.red.cgColor
                 current_text_field.layer.borderWidth = 2.0
                 maxTipError.text = "Value must be >15%, and <100%."
-                defaultMaxTip.text = current_tip_max! + "%"
+                defaultMaxTip.text = current_tip_max + "%"
                 return
             }
             
             else {
                 // User input for max tip percentage is valid
-                current_text_field.layer.borderWidth = 0
-                maxTipError.text = ""
+                current_text_field.layer.borderWidth = 0    // Clear error border
+                maxTipError.text = ""                       // Clear error
                 defaults.set(current_text_field_text, forKey: USER_DEFINED_MAX)
-                defaultMaxTip.text = current_text_field_text! + "%"
+                defaultMaxTip.text = current_text_field_text + "%"
                 return
             }
         }
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        // https://stackoverflow.com/questions/34501364/swift-text-field-keyboard-return-key-not-working
-        // Set auto-return key on the textbox
-        textField.resignFirstResponder()
-        return true
     }
     
     @IBAction func setUserDefaultViewMode(_ sender: Any) {
