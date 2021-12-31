@@ -28,6 +28,7 @@ The following **additional** features are implemented:
 - [X] Prompts user with decimal keyboard only.
 - [X] Dark Mode with varying view colors
 - [X] Error messages in the settings menu
+- [X] Locked autorotation into portrait mode only
 
 ## Video Walkthrough
 
@@ -47,6 +48,7 @@ This being my first iOS app, the initial challenge involved becoming familiar wi
 - Setting colors for the unsafe area of a View, discovered when the 'Unsafe' area's white background was covering up the battery and clock display. Set to be the SystemBackground color.
 - Determining how to see if 10 minutes had passed - just need a function to check the difference between two intervals in time.
 - Placing horizontal dividing lines in a view - ended up just needing a label with a background color, and making it 1px thick.
+- Forcing the app into only portrait mode took some digging on the internet...
 
 
 ## License
