@@ -38,7 +38,7 @@
 
 /* Begin PBXFileReference section */
 		1637E205277A96DF000F36F4 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
-		164E688E277A5479003E8191 /* Prework.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Prework.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		164E688E277A5479003E8191 /* Tic Calc 3000.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tic Calc 3000.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		164E6891277A5479003E8191 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		164E6893277A5479003E8191 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		164E6895277A5479003E8191 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -46,9 +46,9 @@
 		164E689A277A547B003E8191 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		164E689D277A547B003E8191 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		164E689F277A547B003E8191 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		164E68A4277A547B003E8191 /* PreworkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PreworkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		164E68A4277A547B003E8191 /* Tic Calc 3000Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tic Calc 3000Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		164E68A8277A547B003E8191 /* PreworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreworkTests.swift; sourceTree = "<group>"; };
-		164E68AE277A547B003E8191 /* PreworkUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PreworkUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		164E68AE277A547B003E8191 /* Tic Calc 3000UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tic Calc 3000UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		164E68B2277A547B003E8191 /* PreworkUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreworkUITests.swift; sourceTree = "<group>"; };
 		164E68B4277A547B003E8191 /* PreworkUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreworkUITestsLaunchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -92,9 +92,9 @@
 		164E688F277A5479003E8191 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				164E688E277A5479003E8191 /* Prework.app */,
-				164E68A4277A547B003E8191 /* PreworkTests.xctest */,
-				164E68AE277A547B003E8191 /* PreworkUITests.xctest */,
+				164E688E277A5479003E8191 /* Tic Calc 3000.app */,
+				164E68A4277A547B003E8191 /* Tic Calc 3000Tests.xctest */,
+				164E68AE277A547B003E8191 /* Tic Calc 3000UITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -133,9 +133,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		164E688D277A5479003E8191 /* Prework */ = {
+		164E688D277A5479003E8191 /* Tic Calc 3000 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 164E68B8277A547B003E8191 /* Build configuration list for PBXNativeTarget "Prework" */;
+			buildConfigurationList = 164E68B8277A547B003E8191 /* Build configuration list for PBXNativeTarget "Tic Calc 3000" */;
 			buildPhases = (
 				164E688A277A5479003E8191 /* Sources */,
 				164E688B277A5479003E8191 /* Frameworks */,
@@ -145,14 +145,14 @@
 			);
 			dependencies = (
 			);
-			name = Prework;
+			name = "Tic Calc 3000";
 			productName = Prework;
-			productReference = 164E688E277A5479003E8191 /* Prework.app */;
+			productReference = 164E688E277A5479003E8191 /* Tic Calc 3000.app */;
 			productType = "com.apple.product-type.application";
 		};
-		164E68A3277A547B003E8191 /* PreworkTests */ = {
+		164E68A3277A547B003E8191 /* Tic Calc 3000Tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 164E68BB277A547B003E8191 /* Build configuration list for PBXNativeTarget "PreworkTests" */;
+			buildConfigurationList = 164E68BB277A547B003E8191 /* Build configuration list for PBXNativeTarget "Tic Calc 3000Tests" */;
 			buildPhases = (
 				164E68A0277A547B003E8191 /* Sources */,
 				164E68A1277A547B003E8191 /* Frameworks */,
@@ -163,14 +163,14 @@
 			dependencies = (
 				164E68A6277A547B003E8191 /* PBXTargetDependency */,
 			);
-			name = PreworkTests;
+			name = "Tic Calc 3000Tests";
 			productName = PreworkTests;
-			productReference = 164E68A4277A547B003E8191 /* PreworkTests.xctest */;
+			productReference = 164E68A4277A547B003E8191 /* Tic Calc 3000Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		164E68AD277A547B003E8191 /* PreworkUITests */ = {
+		164E68AD277A547B003E8191 /* Tic Calc 3000UITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 164E68BE277A547B003E8191 /* Build configuration list for PBXNativeTarget "PreworkUITests" */;
+			buildConfigurationList = 164E68BE277A547B003E8191 /* Build configuration list for PBXNativeTarget "Tic Calc 3000UITests" */;
 			buildPhases = (
 				164E68AA277A547B003E8191 /* Sources */,
 				164E68AB277A547B003E8191 /* Frameworks */,
@@ -181,9 +181,9 @@
 			dependencies = (
 				164E68B0277A547B003E8191 /* PBXTargetDependency */,
 			);
-			name = PreworkUITests;
+			name = "Tic Calc 3000UITests";
 			productName = PreworkUITests;
-			productReference = 164E68AE277A547B003E8191 /* PreworkUITests.xctest */;
+			productReference = 164E68AE277A547B003E8191 /* Tic Calc 3000UITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -209,7 +209,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 164E6889277A5479003E8191 /* Build configuration list for PBXProject "Prework" */;
+			buildConfigurationList = 164E6889277A5479003E8191 /* Build configuration list for PBXProject "Tic Calc 3000" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -222,9 +222,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				164E688D277A5479003E8191 /* Prework */,
-				164E68A3277A547B003E8191 /* PreworkTests */,
-				164E68AD277A547B003E8191 /* PreworkUITests */,
+				164E688D277A5479003E8191 /* Tic Calc 3000 */,
+				164E68A3277A547B003E8191 /* Tic Calc 3000Tests */,
+				164E68AD277A547B003E8191 /* Tic Calc 3000UITests */,
 			);
 		};
 /* End PBXProject section */
@@ -290,12 +290,12 @@
 /* Begin PBXTargetDependency section */
 		164E68A6277A547B003E8191 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 164E688D277A5479003E8191 /* Prework */;
+			target = 164E688D277A5479003E8191 /* Tic Calc 3000 */;
 			targetProxy = 164E68A5277A547B003E8191 /* PBXContainerItemProxy */;
 		};
 		164E68B0277A547B003E8191 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 164E688D277A5479003E8191 /* Prework */;
+			target = 164E688D277A5479003E8191 /* Tic Calc 3000 */;
 			targetProxy = 164E68AF277A547B003E8191 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -513,7 +513,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Prework.app/Prework";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tic Calc 3000.app/Tic Calc 3000";
 			};
 			name = Debug;
 		};
@@ -532,7 +532,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Prework.app/Prework";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tic Calc 3000.app/Tic Calc 3000";
 			};
 			name = Release;
 		};
@@ -573,7 +573,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		164E6889277A5479003E8191 /* Build configuration list for PBXProject "Prework" */ = {
+		164E6889277A5479003E8191 /* Build configuration list for PBXProject "Tic Calc 3000" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				164E68B6277A547B003E8191 /* Debug */,
@@ -582,7 +582,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		164E68B8277A547B003E8191 /* Build configuration list for PBXNativeTarget "Prework" */ = {
+		164E68B8277A547B003E8191 /* Build configuration list for PBXNativeTarget "Tic Calc 3000" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				164E68B9277A547B003E8191 /* Debug */,
@@ -591,7 +591,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		164E68BB277A547B003E8191 /* Build configuration list for PBXNativeTarget "PreworkTests" */ = {
+		164E68BB277A547B003E8191 /* Build configuration list for PBXNativeTarget "Tic Calc 3000Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				164E68BC277A547B003E8191 /* Debug */,
@@ -600,7 +600,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		164E68BE277A547B003E8191 /* Build configuration list for PBXNativeTarget "PreworkUITests" */ = {
+		164E68BE277A547B003E8191 /* Build configuration list for PBXNativeTarget "Tic Calc 3000UITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				164E68BF277A547B003E8191 /* Debug */,

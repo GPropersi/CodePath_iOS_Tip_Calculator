@@ -207,11 +207,12 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
             darkModeToggle.setOn(false, animated: true)
             self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
             overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
+            defaultTip.backgroundColor = UIColor.systemBackground
+            defaultMaxTip.backgroundColor = UIColor.systemBackground
             self.navigationController?.navigationBar.backgroundColor = UIColor.darkGray
             let standard = self.navigationController?.navigationBar.standardAppearance
             self.navigationController?.navigationBar.scrollEdgeAppearance = standard
-            defaultTip.backgroundColor = UIColor.systemBackground
-            defaultMaxTip.backgroundColor = UIColor.systemBackground
+            
         }
     }
     
