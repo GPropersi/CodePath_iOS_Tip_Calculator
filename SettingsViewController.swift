@@ -53,7 +53,6 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         let dark_or_light = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
         
         setViewMode(dark_or_light)
-        setTitleTextColor(dark_or_light)
         
         // Do any additional setup after loading the view.
     }
@@ -77,6 +76,10 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         toolBar.items = [flexibleSpace, doneButton]
         toolBar.sizeToFit()
         frame.inputAccessoryView = toolBar
+    }
+    
+    func setDarkOrLightModeSettings(_ dark_or_light: String) {
+        // Set dark or light mode settings
     }
     
     func setTitleTextColor(_ dark_or_white: String) {
@@ -193,17 +196,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         // Set user default view mode based on change toggle value
         if darkModeToggle.isOn {
             defaults.set("Dark", forKey: USER_DEFINED_APPEARANCE)
-            overrideUserInterfaceStyle = VIEW_MODE["Dark"]!
-            setTitleTextColor("Dark")
-            defaultTip.backgroundColor = UIColor.systemGray2
-            defaultMaxTip.backgroundColor = UIColor.systemGray2
+            setViewMode("Dark")
         }
         else {
             defaults.set("Light", forKey: USER_DEFINED_APPEARANCE)
-            overrideUserInterfaceStyle = VIEW_MODE["Light"]!
-            setTitleTextColor("Light")
-            defaultTip.backgroundColor = UIColor.systemBackground
-            defaultMaxTip.backgroundColor = UIColor.systemBackground
+            setViewMode("Light")
         }
     }
     
@@ -216,10 +213,20 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
             overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
             defaultTip.backgroundColor = UIColor.systemGray2
             defaultMaxTip.backgroundColor = UIColor.systemGray2
+            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+            self.navigationController?.navigationBar.backgroundColor = UIColor.black
+            let standard = self.navigationController?.navigationBar.standardAppearance
+            self.navigationController?.navigationBar.scrollEdgeAppearance = standard
             
         default :
-            darkModeToggle.setOn(false, animated: false)
+            darkModeToggle.setOn(false, animated: true)
+            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
             overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
+            self.navigationController?.navigationBar.backgroundColor = UIColor.darkGray
+            let standard = self.navigationController?.navigationBar.standardAppearance
+            self.navigationController?.navigationBar.scrollEdgeAppearance = standard
+            defaultTip.backgroundColor = UIColor.systemBackground
+            defaultMaxTip.backgroundColor = UIColor.systemBackground
         }
     }
     

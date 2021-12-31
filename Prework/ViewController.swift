@@ -60,9 +60,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         // Set unsafe area to system background color
         // https://developer.apple.com/forums/thread/682420
-        self.navigationController?.navigationBar.backgroundColor = UIColor.systemBackground
-        let standard = self.navigationController?.navigationBar.standardAppearance
-        self.navigationController?.navigationBar.scrollEdgeAppearance = standard
+//        self.navigationController?.navigationBar.backgroundColor = UIColor.darkGray
+//        let standard = self.navigationController?.navigationBar.standardAppearance
+//        self.navigationController?.navigationBar.scrollEdgeAppearance = standard
         
         // Set dark or light mode, and set text color
         // Set title color depending on dark or light mode
@@ -103,6 +103,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
             }
             billAmountTextField.textColor = TEXT_COLOR_DARK_MODE
             self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+            self.navigationController?.navigationBar.backgroundColor = UIColor.black
+            let standard = self.navigationController?.navigationBar.standardAppearance
+            self.navigationController?.navigationBar.scrollEdgeAppearance = standard
             
         default:
             for label_color in LABELS {
@@ -110,6 +113,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
             }
             billAmountTextField.textColor = TEXT_COLOR_LIGHT_MODE
             self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+            self.navigationController?.navigationBar.backgroundColor = UIColor.darkGray
+            let standard = self.navigationController?.navigationBar.standardAppearance
+            self.navigationController?.navigationBar.scrollEdgeAppearance = standard
         }
         }
     
