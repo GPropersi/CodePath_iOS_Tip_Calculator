@@ -57,6 +57,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         let default_tip = Int(defaults.string(forKey: USER_DEFINED_TIP) ?? "25")
         let default_max = Int(defaults.string(forKey:  USER_DEFINED_MAX) ?? "50")
         let default_view_mode = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
+        let smooth_slider_setting = defaults.bool(forKey: SLIDER_SETTING)
         
         // Set unsafe area to system background color
         // https://developer.apple.com/forums/thread/682420
@@ -69,7 +70,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         //https://stackoverflow.com/questions/26008536/navigationbar-bar-tint-and-title-text-color-in-ios-8
         setDarkOrLightModeSettings(default_view_mode)
 
-        // Set UserDefault values
+        // Set UserDefault values, and slider setting
         setSliderMax(default_max!)
         setTipSliderSelectedValue(default_tip!)
         setTipPercentLabel(default_tip!)
@@ -132,9 +133,12 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Recalculates tip/bill based on new chosen tip percentage
         // Sets slider to rounded value so it 'clicks' into place
         
+        let smooth_slider_setting = defaults.bool(forKey: SLIDER_SETTING)
         let slider_tip = Int(round(tipPercentSlider.value * 100))
         let slider_rounded_value = Float(slider_tip) / 100.0
-        tipPercentSlider.value = slider_rounded_value
+        if !smooth_slider_setting {
+            tipPercentSlider.value = slider_rounded_value
+        }
         setTipPercentLabel(slider_tip)
         calculateTip(billAmountTextField)
     }
