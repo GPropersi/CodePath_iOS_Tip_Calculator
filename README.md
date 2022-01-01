@@ -16,7 +16,7 @@ The following **required** functionality is complete:
 
 The following **optional** features are implemented:
 
-* [X] UI animations - Slider can be smooth or incremental
+* [X] UI animations - Slider can be smooth or incremental, fly in animations
 * [X] Remembering the bill amount across app restarts (if <10mins)
 * [ ] Using locale-specific currency and currency thousands separators.
 * [X] Making sure the keyboard is always visible and the bill amount is always the first responder. This way the user doesn't have to tap anywhere to use this app. Just launch the app and start typing.
@@ -34,8 +34,6 @@ The following **additional** features are implemented:
 
 Here's a walkthrough of implemented user stories:
 
-![](https://i.imgur.com/mWMHjel.gif)
-
 <img src='https://i.imgur.com/GBLHj1v.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
@@ -51,6 +49,8 @@ This being my first iOS app, the initial challenge involved becoming familiar wi
 - Determining how to see if 10 minutes had passed - just need a function to check the difference between two intervals in time.
 - Placing horizontal dividing lines in a view - ended up just needing a label with a background color, and making it 1px thick.
 - Forcing the app into only portrait mode took some digging on the internet...
+- Constraining everything in the view before performing animations led to many constraint conflicts that
+    led to a better definition of constraints needed.
 
 
 ## License

@@ -30,6 +30,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     let TEXT_COLOR_LIGHT_MODE : UIColor = UIColor.init(red: -0.027515370398759842, green: 0.32696807384490967, blue: -0.07128610461950302, alpha: 1.0)
     let TEXT_COLOR_DARK_MODE : UIColor = UIColor.systemGreen
     let SLIDER_SETTING = "SliderSetting"
+    let EMPTY_BILL = "EmptyBill"
     
     @IBOutlet weak var billAmountTextField: UITextField!
     @IBOutlet weak var tipAmountLabel: UILabel!
@@ -37,6 +38,24 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var tipPercentSlider: UISlider!
     @IBOutlet weak var tipPercentOutput: UILabel!
     @IBOutlet weak var maxSliderLabel: UILabel!
+    @IBOutlet weak var totaltextLabel: UILabel!
+    @IBOutlet weak var minSliderLabel: UILabel!
+    @IBOutlet weak var tipTextLabel: UILabel!
+    @IBOutlet weak var tipPercentTextLabel: UILabel!
+    
+    @IBOutlet weak var tipPercentLeftEdge: NSLayoutConstraint!
+    @IBOutlet weak var minSliderPercentLeftEdge: NSLayoutConstraint!
+    @IBOutlet weak var sliderLeftEdge: NSLayoutConstraint!
+    @IBOutlet weak var totalLabelLeftEdge: NSLayoutConstraint!
+    @IBOutlet weak var tipLabelLeftEdge: NSLayoutConstraint!
+    
+    @IBOutlet weak var totalRightEdge: NSLayoutConstraint!
+    @IBOutlet weak var tipAmountRightEdge: NSLayoutConstraint!
+    @IBOutlet weak var tipPercentRightEdge: NSLayoutConstraint!
+    @IBOutlet weak var maxSliderPercentRightEdge: NSLayoutConstraint!
+    @IBOutlet weak var sliderRightEdge: NSLayoutConstraint!
+    
+    @IBOutlet weak var getStartedTopEdge: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,9 +79,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         // Set unsafe area to system background color
         // https://developer.apple.com/forums/thread/682420
-//        self.navigationController?.navigationBar.backgroundColor = UIColor.darkGray
-//        let standard = self.navigationController?.navigationBar.standardAppearance
-//        self.navigationController?.navigationBar.scrollEdgeAppearance = standard
         
         // Set dark or light mode, and set text color
         // Set title color depending on dark or light mode
@@ -75,8 +91,16 @@ class ViewController: UIViewController, UITextFieldDelegate {
         setTipPercentLabel(default_tip!)
         
         // Check if 10 minutes have passed since User last entered bill, if so reset
+        defaults.set("", forKey: LAST_BILL)
         let last_entered_bill = defaults.string(forKey: LAST_BILL) ?? ""
         let last_entered_bill_time = defaults.integer(forKey: LAST_BILL_TIME)
+        
+        // Do animations for sliding stuff in
+        if last_entered_bill == "" {
+            // Hide everything
+            hideEverythingBelowBill()
+            defaults.set(true, forKey: EMPTY_BILL)
+        }
         
         if last_entered_bill_time != 0 {
             checkIfTenMinutesSinceLastEntry(last_entered_bill_time, last_entered_bill)
@@ -88,6 +112,51 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // https://stackoverflow.com/questions/40413567/overriding-shouldautorotate-not-working-in-swift-3
         super.viewDidAppear(animated)
         AppDelegate.AppUtility.lockOrientation(.portrait)
+    }
+    
+    func hideEverythingBelowBill() {
+        // Hide everything not needed when bill is empty
+        let things_to_hide = [tipPercentLeftEdge, minSliderPercentLeftEdge, sliderLeftEdge, totalLabelLeftEdge, tipLabelLeftEdge, totalRightEdge, tipAmountRightEdge, tipPercentRightEdge, maxSliderPercentRightEdge, sliderRightEdge]
+        
+        for object in things_to_hide {
+            switch object {
+            case sliderRightEdge:
+                object!.constant += self.view.bounds.width
+            default:
+                object!.constant -= self.view.bounds.width
+            }
+        }
+    }
+    
+    func slideInEverything() {
+        // Slide everything back into view after user types in bill
+        // Hide get started text
+        let things_to_slide = [tipPercentLeftEdge, minSliderPercentLeftEdge, sliderLeftEdge, totalLabelLeftEdge, tipLabelLeftEdge, totalRightEdge, tipAmountRightEdge, tipPercentRightEdge, maxSliderPercentRightEdge, sliderRightEdge]
+        
+        let ANIMATION_SPEED : Double = 0.4
+        
+        UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
+            self.getStartedTopEdge.constant += self.view.bounds.height
+            self.view.layoutIfNeeded()
+        }, completion: nil)
+        
+        for object in things_to_slide {
+            
+            // Slider needs to move as one object, so right edge needs to move from right to left even though constrained to right
+            switch object {
+            case sliderRightEdge:
+                UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
+                    object!.constant -= self.view.bounds.width
+                    self.view.layoutIfNeeded()
+                }, completion: nil)
+            
+            default:
+                UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
+                    object!.constant += self.view.bounds.width
+                    self.view.layoutIfNeeded()
+                }, completion: nil)
+            }
+        }
     }
     
     func setDarkOrLightModeSettings(_ chosen_view_mode: String) {
@@ -117,14 +186,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
             let standard = self.navigationController?.navigationBar.standardAppearance
             self.navigationController?.navigationBar.scrollEdgeAppearance = standard
         }
-        }
-    
+    }
     
     func checkIfTenMinutesSinceLastEntry(_ last_bill_time: Int, _ last_bill: String) {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let current_time = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time < 600 {
+        if current_time - last_bill_time < 1 {
             // Less than 10 minutes have passed since last restart, use previous bill entry
             billAmountTextField.text = String(last_bill)
             calculateTip(billAmountTextField)
@@ -158,6 +226,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Calculates the tip based on the total Bill
         // and selected tip amount. Responds directly to editing
         // of the bill amount.
+        let everything_is_hidden = defaults.bool(forKey: EMPTY_BILL)
+        
+        if everything_is_hidden {
+            defaults.set(false, forKey: EMPTY_BILL)
+            slideInEverything()
+        }
+        
         var bill_amount = billAmountTextField.text!
         
         let period_occ: Int = bill_amount.numberOfOccurrencesOf(string: ".")
