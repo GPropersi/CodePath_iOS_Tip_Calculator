@@ -7,7 +7,9 @@
 
 import UIKit
 
-class SettingsViewController: UIViewController, UITextFieldDelegate {
+class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+    
+    
     
     let defaults = UserDefaults.standard
     let USER_DEFINED_TIP = "UserDefinedTip"
@@ -19,6 +21,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     ]
     let SLIDER_SETTING = "SliderSetting"
     let CHANGED_SCREENS = "ChangedScreens"
+    let CURRENCY_SELECTION = "CurrencySelection"
 
     @IBOutlet weak var defaultTip: UITextField!
     @IBOutlet weak var defaultMaxTip: UITextField!
@@ -26,6 +29,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var maxTipError: UILabel!
     @IBOutlet weak var darkModeToggle: UISwitch!
     @IBOutlet weak var smoothSliderToggle: UISwitch!
+    
+    @IBOutlet weak var currencyPicker: UITextField!
+    @IBOutlet weak var picker: UIPickerView!
+    
+    var currencies:[String] = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,12 +63,59 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         
         setViewMode(dark_or_light)
         
+        let currency_chosen = defaults.string(forKey: CURRENCY_SELECTION) ?? Locale.current.currencyCode
+        
+        currencies = Locale.isoCurrencyCodes
+        
+        picker.isHidden = true
+        currencyPicker.text = currency_chosen
+        
+        // Picker view
+        // https://stackoverflow.com/questions/36193009/uipickerview-pop-up
+
+        self.currencyPicker.delegate = self
+        self.picker.delegate = self
+        self.picker.dataSource = self
+        
         // Do any additional setup after loading the view.
     }
     
     @objc private func didTapDone() {
         defaultTip.resignFirstResponder()
         defaultMaxTip.resignFirstResponder()
+    }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return currencies.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+            return currencies[row]
+        }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        self.currencyPicker.isHidden = false
+        self.picker.isHidden = true
+        self.currencyPicker.text = currencies[row];
+        defaults.set(currencies[row], forKey: CURRENCY_SELECTION)
+        
+        // Synchronize for currency code
+        defaults.synchronize()
+    }
+
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        self.currencyPicker.isHidden = true
+        self.picker.isHidden = false
+        return false
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
     }
     
     func addDoneToKeyboard(_ frame: UITextField) {
@@ -208,6 +263,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
             overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
             defaultTip.backgroundColor = UIColor.systemGray2
             defaultMaxTip.backgroundColor = UIColor.systemGray2
+            currencyPicker.backgroundColor = UIColor.systemGray2
             self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
             self.navigationController?.navigationBar.backgroundColor = UIColor.black
             let standard = self.navigationController?.navigationBar.standardAppearance
@@ -219,6 +275,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
             overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
             defaultTip.backgroundColor = UIColor.systemBackground
             defaultMaxTip.backgroundColor = UIColor.systemBackground
+            currencyPicker.backgroundColor = UIColor.systemBackground
             self.navigationController?.navigationBar.backgroundColor = UIColor.darkGray
             let standard = self.navigationController?.navigationBar.standardAppearance
             self.navigationController?.navigationBar.scrollEdgeAppearance = standard
