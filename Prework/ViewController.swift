@@ -49,16 +49,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var movableTopEdge: NSLayoutConstraint!
     @IBOutlet weak var movableRightEdge: NSLayoutConstraint!
     
-    @IBOutlet weak var lister: UIButton!
-    
-    @IBOutlet var collector: [UIButton]!
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        collector.append(contentsOf: Locale.isoCurrencyCodes)
-        
+    
         billAmountTextField.delegate = self
         
         self.title = "Tip Calculator"
@@ -187,8 +180,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let current_time = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time > 1 {
-            // Less than 10 minutes have passed since last restart, use previous bill entry
+        if current_time - last_bill_time > 600 {
+            // More than 10 minutes have passed since last restart, use empty bill
             billAmountTextField.text = convert_to_currency(0.0)
             hideEverythingBelowBill()
             
@@ -206,6 +199,11 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 // Force UserDefaults to save.
                 defaults.synchronize()
             }
+        }
+        else {
+            // Less than 10 minutes have passed, use previous bill
+            billAmountTextField.text = last_bill
+            self.movableTopEdge.constant -= self.view.bounds.height
         }
     }
     
