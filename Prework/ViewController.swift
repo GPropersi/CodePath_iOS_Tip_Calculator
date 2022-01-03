@@ -203,7 +203,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         else {
             // Less than 10 minutes have passed, use previous bill
             billAmountTextField.text = last_bill
-            self.movableTopEdge.constant -= self.view.bounds.height
+            self.movableTopEdge.constant += self.view.bounds.height
         }
     }
     
