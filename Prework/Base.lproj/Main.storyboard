@@ -195,6 +195,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="billAmountTextField" destination="fOF-uy-ko1" id="SpU-6p-70O"/>
+                        <outlet property="enterBillText" destination="HnW-So-4Lx" id="ee6-De-wV4"/>
                         <outlet property="maxSliderLabel" destination="2Yu-vW-TQF" id="sAh-re-QJh"/>
                         <outlet property="minSliderLabel" destination="F01-Y2-byc" id="lCb-4h-k9k"/>
                         <outlet property="movableLeftEdge" destination="tyH-rM-D9Y" id="Sc5-W9-aLn"/>
@@ -338,7 +339,7 @@
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="E1O-RT-UXh">
-                                <rect key="frame" x="0.0" y="521" width="414" height="216"/>
+                                <rect key="frame" x="0.0" y="520.5" width="414" height="216"/>
                             </pickerView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Note: This will automatically set the slider and tip percentages to this value. Please use a value between 0% and 100%." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="niN-2f-43F">
                                 <rect key="frame" x="20" y="188" width="374" height="50.5"/>

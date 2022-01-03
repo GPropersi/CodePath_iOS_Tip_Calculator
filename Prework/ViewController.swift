@@ -33,6 +33,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     let SLIDER_SETTING = "SliderSetting"
     let EMPTY_BILL = "EmptyBill"
     let CHANGED_SCREENS = "ChangedScreens"
+    let CURRENCY_SELECTION = "CurrencySelection"
     
     @IBOutlet weak var billAmountTextField: UITextField!
     @IBOutlet weak var tipAmountLabel: UILabel!
@@ -44,6 +45,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var minSliderLabel: UILabel!
     @IBOutlet weak var tipTextLabel: UILabel!
     @IBOutlet weak var tipPercentTextLabel: UILabel!
+    @IBOutlet weak var enterBillText: UILabel!
     
     @IBOutlet weak var movableLeftEdge: NSLayoutConstraint!
     @IBOutlet weak var movableTopEdge: NSLayoutConstraint!
@@ -129,7 +131,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         self.view.layoutIfNeeded()
         UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
-            self.movableTopEdge.constant += self.view.bounds.height
+            self.enterBillText.alpha = 0
             self.view.layoutIfNeeded()
         }, completion: nil)
         
@@ -180,17 +182,21 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let current_time = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time > 600 {
+        if current_time - last_bill_time > 5 {
             // More than 10 minutes have passed since last restart, use empty bill
             billAmountTextField.text = convert_to_currency(0.0)
             hideEverythingBelowBill()
+            defaults.set(convert_to_currency(0.0), forKey: LAST_BILL)
+            
+            // Force UserDefaults to save.
+            defaults.synchronize()
             
             if defaults.bool(forKey: CHANGED_SCREENS) {
                 // If enough time has passed on setting screen, slide up the initial text again
     
                 self.view.layoutIfNeeded()
-                UIView.animate(withDuration: 0.4, delay: 0.0, options: [], animations: {
-                    self.movableTopEdge.constant -= self.view.bounds.height
+                UIView.animate(withDuration: 0.4, delay: 0.0, animations: {
+                    self.enterBillText.alpha = 1
                     self.view.layoutIfNeeded()
                 }, completion: nil)
                 
@@ -202,8 +208,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
         else {
             // Less than 10 minutes have passed, use previous bill
+            //checkForCurrencyChange(last_bill)
             billAmountTextField.text = last_bill
-            self.movableTopEdge.constant += self.view.bounds.height
         }
     }
     
@@ -224,6 +230,10 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         calculateTip(last_bill)
     }
+    
+//    func checkForCurrencyChange(_ last_bill: String) {
+//        print("Last bill is " + last_bill)
+//    }
     
     func convert_to_currency(_ input: Decimal) -> String {
         // Converts decimal to string using currencyFormatter
@@ -253,8 +263,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // of the bill amount.
         
         let currencyFormatter = getCurrencyFormatter()
-        
-        let currency_symbol: String = currencyFormatter.locale.currencySymbol!
+
+        let currency_symbol: String = currencyFormatter.currencySymbol!
         let decimal_symbol: String = currencyFormatter.decimalSeparator!
         let grouping_symbol: String = currencyFormatter.groupingSeparator!
         
@@ -268,7 +278,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
         
         var bill_amount = billAmountTextField.text!
-        
+
         let contains_invalid_chars : Bool = validateCurrencyOnly(bill_amount, currency_symbol, decimal_symbol, grouping_symbol)
         
         // Validate inputs for currency values
@@ -330,9 +340,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
     func validateCurrencyOnly(_ user_input: String, _ currency_symbol: String, _ decimal_sep: String, _ grouping_sep: String) -> Bool {
         // Validates user input to prevent copy-pasting non-currency values
         // Provides true if values in string are only related to the locale's currency
-        let valid_characters = CharacterSet.init(charactersIn: "1234567890." + currency_symbol + decimal_sep + grouping_sep)
+        let valid_characters = CharacterSet.init(charactersIn: "1234567890" + currency_symbol + " " + decimal_sep + grouping_sep).union(CharacterSet.whitespaces)
         let user_input_set : CharacterSet = CharacterSet.init(charactersIn: user_input)
-
+        
         if user_input_set.isSubset(of: valid_characters) {
             return false
         }
@@ -363,7 +373,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         currencyFormatter.usesGroupingSeparator = true
         currencyFormatter.numberStyle = .currency
         // Localize
-        currencyFormatter.locale = Locale.current
+        //currencyFormatter.locale = Locale.current
+        currencyFormatter.currencyCode = defaults.string(forKey: CURRENCY_SELECTION)
         return currencyFormatter
     }
     
