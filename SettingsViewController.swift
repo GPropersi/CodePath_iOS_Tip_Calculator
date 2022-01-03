@@ -18,6 +18,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         "Light" : .light
     ]
     let SLIDER_SETTING = "SliderSetting"
+    let CHANGED_SCREENS = "ChangedScreens"
 
     @IBOutlet weak var defaultTip: UITextField!
     @IBOutlet weak var defaultMaxTip: UITextField!
@@ -122,6 +123,9 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
             defaultTipError.text = ""                   // Clear error
             defaults.set(default_tip_text_input, forKey: USER_DEFINED_TIP)
             defaultTip.text = default_tip_text_input + "%"
+            
+            // Force UserDefaults to save.
+            defaults.synchronize()
             return
         }
     }
@@ -173,6 +177,9 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
             maxTipError.text = ""                       // Clear error
             defaults.set(max_tip_text_input_integer, forKey: USER_DEFINED_MAX)
             defaultMaxTip.text = max_tip_text_input + "%"
+            
+            // Force UserDefaults to save.
+            defaults.synchronize()
             return
         }
     }
@@ -187,6 +194,9 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
             defaults.set("Light", forKey: USER_DEFINED_APPEARANCE)
             setViewMode("Light")
         }
+        
+        // Force UserDefaults to save.
+        defaults.synchronize()
     }
     
     func setViewMode(_ dark_or_light: String) {
@@ -226,6 +236,9 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         else {
             defaults.set(true, forKey: SLIDER_SETTING)
         }
+        
+        // Force UserDefaults to save.
+        defaults.synchronize()
     }
     
 

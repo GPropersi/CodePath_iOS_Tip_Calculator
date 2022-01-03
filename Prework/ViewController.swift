@@ -27,10 +27,12 @@ class ViewController: UIViewController, UITextFieldDelegate {
     ]
     let LAST_BILL_TIME = "LastBillTime"
     let LAST_BILL = "LastBill"
+    let LAST_BILL_STRING_LENGTH = "LastBillSStringLength"
     let TEXT_COLOR_LIGHT_MODE : UIColor = UIColor.init(red: -0.027515370398759842, green: 0.32696807384490967, blue: -0.07128610461950302, alpha: 1.0)
     let TEXT_COLOR_DARK_MODE : UIColor = UIColor.systemGreen
     let SLIDER_SETTING = "SliderSetting"
     let EMPTY_BILL = "EmptyBill"
+    let CHANGED_SCREENS = "ChangedScreens"
     
     @IBOutlet weak var billAmountTextField: UITextField!
     @IBOutlet weak var tipAmountLabel: UILabel!
@@ -43,22 +45,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var tipTextLabel: UILabel!
     @IBOutlet weak var tipPercentTextLabel: UILabel!
     
-    @IBOutlet weak var tipPercentLeftEdge: NSLayoutConstraint!
-    @IBOutlet weak var minSliderPercentLeftEdge: NSLayoutConstraint!
-    @IBOutlet weak var sliderLeftEdge: NSLayoutConstraint!
-    @IBOutlet weak var totalLabelLeftEdge: NSLayoutConstraint!
-    @IBOutlet weak var tipLabelLeftEdge: NSLayoutConstraint!
+    @IBOutlet weak var movableLeftEdge: NSLayoutConstraint!
+    @IBOutlet weak var movableTopEdge: NSLayoutConstraint!
+    @IBOutlet weak var movableRightEdge: NSLayoutConstraint!
     
-    @IBOutlet weak var totalRightEdge: NSLayoutConstraint!
-    @IBOutlet weak var tipAmountRightEdge: NSLayoutConstraint!
-    @IBOutlet weak var tipPercentRightEdge: NSLayoutConstraint!
-    @IBOutlet weak var maxSliderPercentRightEdge: NSLayoutConstraint!
-    @IBOutlet weak var sliderRightEdge: NSLayoutConstraint!
+    @IBOutlet weak var lister: UIButton!
     
-    @IBOutlet weak var getStartedTopEdge: NSLayoutConstraint!
+    @IBOutlet var collector: [UIButton]!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        collector.append(contentsOf: Locale.isoCurrencyCodes)
         
         billAmountTextField.delegate = self
         
@@ -91,16 +90,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         setTipPercentLabel(default_tip!)
         
         // Check if 10 minutes have passed since User last entered bill, if so reset
-        defaults.set("", forKey: LAST_BILL)
-        let last_entered_bill = defaults.string(forKey: LAST_BILL) ?? ""
+        let last_entered_bill = defaults.string(forKey: LAST_BILL) ?? convert_to_currency(0.0)
         let last_entered_bill_time = defaults.integer(forKey: LAST_BILL_TIME)
-        
-        // Do animations for sliding stuff in
-        if last_entered_bill == "" {
-            // Hide everything
-            hideEverythingBelowBill()
-            defaults.set(true, forKey: EMPTY_BILL)
-        }
         
         if last_entered_bill_time != 0 {
             checkIfTenMinutesSinceLastEntry(last_entered_bill_time, last_entered_bill)
@@ -114,49 +105,53 @@ class ViewController: UIViewController, UITextFieldDelegate {
         AppDelegate.AppUtility.lockOrientation(.portrait)
     }
     
+    @IBSegueAction func changeViews(_ coder: NSCoder) -> SettingsViewController? {
+        // Using to slide in initial text again
+        defaults.set(true, forKey: CHANGED_SCREENS)
+        
+        // Force UserDefaults to save.
+        defaults.synchronize()
+        return SettingsViewController(coder: coder)
+    }
+    
     func hideEverythingBelowBill() {
         // Hide everything not needed when bill is empty
-        let things_to_hide = [tipPercentLeftEdge, minSliderPercentLeftEdge, sliderLeftEdge, totalLabelLeftEdge, tipLabelLeftEdge, totalRightEdge, tipAmountRightEdge, tipPercentRightEdge, maxSliderPercentRightEdge, sliderRightEdge]
+        self.movableLeftEdge!.constant += self.view.bounds.width
+        self.movableRightEdge!.constant -= self.view.bounds.width
+        self.view.layoutIfNeeded()
         
-        for object in things_to_hide {
-            switch object {
-            case sliderRightEdge:
-                object!.constant += self.view.bounds.width
-            default:
-                object!.constant -= self.view.bounds.width
-            }
-        }
+        // To remember if everything has been hidden before
+        defaults.set(true, forKey: EMPTY_BILL)
+        
+        // Force UserDefaults to save.
+        defaults.synchronize()
     }
     
     func slideInEverything() {
         // Slide everything back into view after user types in bill
         // Hide get started text
-        let things_to_slide = [tipPercentLeftEdge, minSliderPercentLeftEdge, sliderLeftEdge, totalLabelLeftEdge, tipLabelLeftEdge, totalRightEdge, tipAmountRightEdge, tipPercentRightEdge, maxSliderPercentRightEdge, sliderRightEdge]
-        
+        // https://www.twilio.com/blog/2018/04/constraint-animations-ios-apps-xcode-swift.html
+
         let ANIMATION_SPEED : Double = 0.4
         
+        self.view.layoutIfNeeded()
         UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
-            self.getStartedTopEdge.constant += self.view.bounds.height
+            self.movableTopEdge.constant += self.view.bounds.height
             self.view.layoutIfNeeded()
         }, completion: nil)
         
-        for object in things_to_slide {
-            
-            // Slider needs to move as one object, so right edge needs to move from right to left even though constrained to right
-            switch object {
-            case sliderRightEdge:
-                UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
-                    object!.constant -= self.view.bounds.width
-                    self.view.layoutIfNeeded()
-                }, completion: nil)
-            
-            default:
-                UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
-                    object!.constant += self.view.bounds.width
-                    self.view.layoutIfNeeded()
-                }, completion: nil)
-            }
-        }
+        self.view.layoutIfNeeded()
+        UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
+            self.movableLeftEdge.constant -= self.view.bounds.width
+            self.view.layoutIfNeeded()
+        }, completion: nil)
+        
+        self.view.layoutIfNeeded()
+        UIView.animate(withDuration: ANIMATION_SPEED, delay: 0.0, options: [], animations: {
+            self.movableRightEdge!.constant += self.view.bounds.width
+            self.view.layoutIfNeeded()
+        }, completion: nil)
+         
     }
     
     func setDarkOrLightModeSettings(_ chosen_view_mode: String) {
@@ -192,19 +187,26 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let current_time = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time < 1 {
+        if current_time - last_bill_time > 1 {
             // Less than 10 minutes have passed since last restart, use previous bill entry
-            billAmountTextField.text = String(last_bill)
-            calculateTip(billAmountTextField)
-        }
-    }
+            billAmountTextField.text = convert_to_currency(0.0)
+            hideEverythingBelowBill()
+            
+            if defaults.bool(forKey: CHANGED_SCREENS) {
+                // If enough time has passed on setting screen, slide up the initial text again
     
-    func addDollerSign(_ textField: UITextField) {
-        // Add $ sign to bill input text
-        let current_text_field = textField
-        let current_text_field_text = current_text_field.text!.replacingOccurrences(of: "$", with: "")
-        
-        current_text_field.text = "$" + current_text_field_text
+                self.view.layoutIfNeeded()
+                UIView.animate(withDuration: 0.4, delay: 0.0, options: [], animations: {
+                    self.movableTopEdge.constant -= self.view.bounds.height
+                    self.view.layoutIfNeeded()
+                }, completion: nil)
+                
+                defaults.set(false, forKey: CHANGED_SCREENS)
+                
+                // Force UserDefaults to save.
+                defaults.synchronize()
+            }
+        }
     }
     
     @IBAction func getTipPerc(_ sender: Any) {
@@ -219,63 +221,152 @@ class ViewController: UIViewController, UITextFieldDelegate {
             tipPercentSlider.value = slider_rounded_value
         }
         setTipPercentLabel(slider_tip)
-        calculateTip(billAmountTextField)
+        
+        let last_bill = convert_to_decimal_from_currency(billAmountTextField.text!)
+        
+        calculateTip(last_bill)
+    }
+    
+    func convert_to_currency(_ input: Decimal) -> String {
+        // Converts decimal to string using currencyFormatter
+        let currencyFormatter = getCurrencyFormatter()
+        
+        return currencyFormatter.string(from: NSDecimalNumber(decimal: input))!
+    }
+    
+    func convert_to_decimal_from_currency(_ string_input: String) -> Decimal {
+        // Converts from currency to decimal
+        let currencyFormatter = getCurrencyFormatter()
+        
+        let currency_symbol: String = currencyFormatter.locale.currencySymbol!
+        let grouping_symbol: String = currencyFormatter.groupingSeparator!
+        
+        var string_input_modded = string_input
+        
+        string_input_modded = string_input_modded.replacingOccurrences(of: currency_symbol, with: "")
+        string_input_modded = string_input_modded.replacingOccurrences(of: grouping_symbol, with: "")
+        
+        return Decimal(string: string_input_modded)!
     }
 
-    @IBAction func calculateTip(_ textField: UITextField) {
+    @IBAction func validateBillInputs(_ textField: UITextField) {
         // Calculates the tip based on the total Bill
         // and selected tip amount. Responds directly to editing
         // of the bill amount.
+        
+        let currencyFormatter = getCurrencyFormatter()
+        
+        let currency_symbol: String = currencyFormatter.locale.currencySymbol!
+        let decimal_symbol: String = currencyFormatter.decimalSeparator!
+        let grouping_symbol: String = currencyFormatter.groupingSeparator!
+        
         let everything_is_hidden = defaults.bool(forKey: EMPTY_BILL)
+        let last_entered_bill = defaults.string(forKey: LAST_BILL) ?? convert_to_currency(0.0)
         
         if everything_is_hidden {
+            // Slide in all inputs if everything is hidden after user begins to type in values
             defaults.set(false, forKey: EMPTY_BILL)
             slideInEverything()
         }
         
         var bill_amount = billAmountTextField.text!
         
-        let period_occ: Int = bill_amount.numberOfOccurrencesOf(string: ".")
+        let contains_invalid_chars : Bool = validateCurrencyOnly(bill_amount, currency_symbol, decimal_symbol, grouping_symbol)
         
-        guard period_occ <= 1 else {
-            // Do not allow user to enter more than one period
-            billAmountTextField.text = String(bill_amount.dropLast(1))
+        // Validate inputs for currency values
+        if contains_invalid_chars {
+            billAmountTextField.text = last_entered_bill
             return
         }
         
-        // Create array with strings before and after period. User should not be inputting
-        // values with more than two digits after period. Check for this.
-        let strings_with_period = bill_amount.split(separator: ".")
+        let last_bill_length = defaults.integer(forKey: LAST_BILL_STRING_LENGTH)
+        var user_pressed_delete: Bool
+        
+        if last_bill_length > bill_amount.count {
+            // Length of current input is shorter than before -> user pressed delete
+            user_pressed_delete = true
+        }
+        else {
+            user_pressed_delete = false
+        }
+        
+        bill_amount = bill_amount.replacingOccurrences(of: currency_symbol, with: "")
+        bill_amount = bill_amount.replacingOccurrences(of: grouping_symbol, with: "")
+        
+        var bill_amount_to_decimal: Decimal
+        
+        if user_pressed_delete {
+            // Slide digits over one to the right
+            if !bill_amount.contains(decimal_symbol) {
+                bill_amount_to_decimal = Decimal(string: bill_amount) ?? 0
+            }
+            else {
+                bill_amount_to_decimal = (Decimal(string: bill_amount) ?? 0) / 10
+            }
+            
+        }
+        else {
+            // Slide digits over to the left
+            if !bill_amount.contains(decimal_symbol) {
+                // Certain currencies contain no decimal
+                bill_amount_to_decimal = Decimal(string: bill_amount)!
+            }
+            else {
+                bill_amount_to_decimal = Decimal(string: bill_amount)! * 10
+            }
+        }
+        
+        let bill_amount_to_string = currencyFormatter.string(from: NSDecimalNumber(decimal: bill_amount_to_decimal))
 
-        if strings_with_period.count > 1 && strings_with_period[1].count > 2{
-            billAmountTextField.text = String(bill_amount.dropLast(1))
-            return
+        billAmountTextField.text = bill_amount_to_string
+        calculateTip(bill_amount_to_decimal)
+        
+        defaults.set(bill_amount_to_string!.count, forKey: LAST_BILL_STRING_LENGTH)
+        defaults.set(Int(Date().timeIntervalSince1970), forKey: LAST_BILL_TIME)
+        defaults.set(bill_amount_to_string, forKey: LAST_BILL)
+        
+        // Force UserDefaults to save.
+        defaults.synchronize()
+    }
+    
+    func validateCurrencyOnly(_ user_input: String, _ currency_symbol: String, _ decimal_sep: String, _ grouping_sep: String) -> Bool {
+        // Validates user input to prevent copy-pasting non-currency values
+        // Provides true if values in string are only related to the locale's currency
+        let valid_characters = CharacterSet.init(charactersIn: "1234567890." + currency_symbol + decimal_sep + grouping_sep)
+        let user_input_set : CharacterSet = CharacterSet.init(charactersIn: user_input)
+
+        if user_input_set.isSubset(of: valid_characters) {
+            return false
         }
-        
-        bill_amount = bill_amount.replacingOccurrences(of: "$", with: "")
-        
-        let bill = Double(bill_amount) ?? 0
-        
-        // Round tip percent to 2 decimal digits
-        let tip_percent = round(Double(tipPercentSlider.value) * 100) / 100.0
-        
+        else {
+            return true
+        }
+    }
+    
+    func calculateTip(_ bill: Decimal) {
+        // Calculates tip and total based on input values
         // Get tip by multiplying bill by tip percentage
+        let tip_percent = Decimal.init(floatLiteral: Double(tipPercentSlider.value))
         let tip = bill * tip_percent
-        
+
         // Get total by adding bill and total amount
         let total = bill + tip
-        
+
         // Update the tip label
-        tipAmountLabel.text = String(format: "$%.2f", tip)
+        tipAmountLabel.text = convert_to_currency(tip)
         
         // Update the total label
-        totalLabel.text = String(format: "$%.2f", total)
-        
-        defaults.set(Int(Date().timeIntervalSince1970), forKey: LAST_BILL_TIME)
-        defaults.set(bill_amount, forKey: LAST_BILL)
-        
-        // Add doller sign to user input
-        addDollerSign(textField)
+        totalLabel.text = convert_to_currency(total)
+    }
+    
+    func getCurrencyFormatter() -> NumberFormatter {
+        // Returns a formatter for currency
+        let currencyFormatter = NumberFormatter()
+        currencyFormatter.usesGroupingSeparator = true
+        currencyFormatter.numberStyle = .currency
+        // Localize
+        currencyFormatter.locale = Locale.current
+        return currencyFormatter
     }
     
     func setSliderMax(_ max_tip: Int) {
