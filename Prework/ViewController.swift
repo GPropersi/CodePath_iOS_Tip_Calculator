@@ -18,6 +18,14 @@ extension Decimal {
     }
 }
 
+extension Decimal {
+    func roundDecimal() -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 2
+        return formatter.string(from: self as NSDecimalNumber)!
+    }
+}
+
 class ViewController: UIViewController, UITextFieldDelegate {
     
     let defaults = UserDefaults.standard
@@ -196,7 +204,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let current_time = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time > 600 {
+        if current_time - last_bill_time > 60 {
             // More than 10 minutes have passed since last restart, use empty bill
             billAmountTextField.text = convert_to_currency(0.0)
             hideEverythingBelowBill()
@@ -316,7 +324,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         bill_amount = bill_amount.replacingOccurrences(of: currency_symbol, with: "")
         bill_amount = bill_amount.replacingOccurrences(of: grouping_symbol, with: "")
-        
         var bill_amount_to_decimal: Decimal
         
         if user_pressed_delete {
@@ -340,7 +347,14 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 // Delete would then multiply by 10 instead since previous bill would've been
                 // longer. i.e. YEN 10000 is shorter than $10000.00, so deleting with locale as
                 // USD would make it $100000.00
-                bill_amount_to_decimal = Decimal(string: bill_amount)! / 10
+                // if length of new > length of old, multiply by 10
+                if bill_amount.count > last_entered_bill_decimal_format_as_string.count {
+                    bill_amount_to_decimal = Decimal(string: bill_amount)! * 10
+                }
+                else {
+                    bill_amount_to_decimal = Decimal(string: bill_amount)! / 10
+                }
+                
             }
             else {
                 bill_amount_to_decimal = Decimal(string: bill_amount)! * 10
@@ -378,7 +392,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
     func calculateTip(_ bill: Decimal) {
         // Calculates tip and total based on input values
         // Get tip by multiplying bill by tip percentage
-        let tip_percent = Decimal.init(floatLiteral: Double(tipPercentSlider.value))
+        var tip_percent = Decimal.init(floatLiteral: Double(tipPercentSlider.value))
+        tip_percent = Decimal(string: tip_percent.roundDecimal())!
+
         let tip = bill * tip_percent
 
         // Get total by adding bill and total amount
