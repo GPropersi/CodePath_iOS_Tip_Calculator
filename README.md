@@ -18,7 +18,7 @@ The following **optional** features are implemented:
 
 * [X] UI animations - Slider can be smooth or incremental, fly in animations
 * [X] Remembering the bill amount across app restarts (if <10mins)
-* [ ] Using locale-specific currency and currency thousands separators.
+* [X] Using locale-specific currency and currency thousands separators.
 * [X] Making sure the keyboard is always visible and the bill amount is always the first responder. This way the user doesn't have to tap anywhere to use this app. Just launch the app and start typing.
 
 The following **additional** features are implemented:
@@ -27,14 +27,15 @@ The following **additional** features are implemented:
 - [X] Automatically calculates tip while user inputs bill amount. 
 - [X] Prompts user with decimal keyboard only.
 - [X] Dark Mode with varying view colors
-- [X] Error messages in the settings menu
+- [X] Error messages in the settings menu if invalid values input
 - [X] Locked autorotation into portrait mode only
+- [X] Allows user to alternate currency chosen within the app
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
-<img src='https://i.imgur.com/GBLHj1v.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='https://i.imgur.com/6AwfVl0.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
@@ -50,7 +51,9 @@ This being my first iOS app, the initial challenge involved becoming familiar wi
 - Placing horizontal dividing lines in a view - ended up just needing a label with a background color, and making it 1px thick.
 - Forcing the app into only portrait mode took some digging on the internet...
 - Constraining everything in the view before performing animations led to many constraint conflicts that
-    led to a better definition of constraints needed.
+    led to a better definition of what constraints were needed.
+- Currency conversion led to the need to store workable numerical/decimal values while also working with strings to display, and learning how to use
+    a NumericalFormatter.
 
 
 ## License

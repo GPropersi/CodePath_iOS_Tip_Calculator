@@ -38,6 +38,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     let EMPTY_BILL = "EmptyBill"
     let CHANGED_SCREENS = "ChangedScreens"
     let CURRENCY_SELECTION = "CurrencySelection"
+    let ORIGINAL_MARGIN = "OriginalMargin"
     
     @IBOutlet weak var billAmountTextField: UITextField!
     @IBOutlet weak var tipAmountLabel: UILabel!
@@ -62,6 +63,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         self.title = "Tip Calculator"
         
         billAmountTextField.becomeFirstResponder()
+
+        defaults.set([movableLeftEdge.constant, movableRightEdge.constant], forKey:ORIGINAL_MARGIN)
         
         // Do any additional setup after loading the view.
     }
@@ -120,6 +123,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         // To remember if everything has been hidden before
         defaults.set(true, forKey: EMPTY_BILL)
+        
         
         // Force UserDefaults to save.
         defaults.synchronize()
@@ -181,23 +185,29 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    func resetMargins() {
+        let original_margins: [CGFloat] = defaults.object(forKey: ORIGINAL_MARGIN) as! [CGFloat]
+        self.movableLeftEdge!.constant = original_margins[0]
+        self.movableRightEdge!.constant = original_margins[1]
+        self.view.layoutIfNeeded()
+    }
+    
     func checkIfTenMinutesSinceLastEntry(_ last_bill_time: Int, _ last_bill: String) {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let current_time = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time > 10 {
+        if current_time - last_bill_time > 600 {
             // More than 10 minutes have passed since last restart, use empty bill
-            defaults.set(Locale.current.currencyCode, forKey: CURRENCY_SELECTION)
             billAmountTextField.text = convert_to_currency(0.0)
             hideEverythingBelowBill()
+            //resetMargins()
             defaults.set(convert_to_currency(0.0), forKey: LAST_BILL)
             
             // Force UserDefaults to save.
             defaults.synchronize()
             
             if defaults.bool(forKey: CHANGED_SCREENS) {
-                // If enough time has passed on setting screen, slide up the initial text again
-    
+                // If enough time has passed on setting screen, show the initial text again
                 self.view.layoutIfNeeded()
                 UIView.animate(withDuration: 0.4, delay: 0.0, animations: {
                     self.enterBillText.alpha = 1
@@ -281,9 +291,12 @@ class ViewController: UIViewController, UITextFieldDelegate {
             // Slide in all inputs if everything is hidden after user begins to type in values
             defaults.set(false, forKey: EMPTY_BILL)
             slideInEverything()
+            resetMargins()
         }
         
         var bill_amount = billAmountTextField.text!
+        
+        print(bill_amount)
 
         let contains_invalid_chars : Bool = validateCurrencyOnly(bill_amount, currency_symbol, decimal_symbol, grouping_symbol)
         
