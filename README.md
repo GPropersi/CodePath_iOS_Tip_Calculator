@@ -25,7 +25,7 @@ The following **additional** features are implemented:
 
 - [X] Slider instead of segmented choice, with setting for max slider value.
 - [X] Automatically calculates tip while user inputs bill amount. 
-- [X] Prompts user with decimal keyboard only.
+- [X] Prompts user with numpad only.
 - [X] Dark Mode with varying view colors
 - [X] Error messages in the settings menu if invalid values input
 - [X] Locked autorotation into portrait mode only
@@ -36,6 +36,8 @@ The following **additional** features are implemented:
 Here's a walkthrough of implemented user stories:
 
 <img src='https://i.imgur.com/6AwfVl0.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='https://i.imgur.com/6AwfVl0.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
