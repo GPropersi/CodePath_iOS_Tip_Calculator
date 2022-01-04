@@ -64,6 +64,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         billAmountTextField.becomeFirstResponder()
 
+        // Define original margins
         defaults.set([movableLeftEdge.constant, movableRightEdge.constant], forKey:ORIGINAL_MARGIN)
         
         // Do any additional setup after loading the view.
@@ -123,7 +124,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         // To remember if everything has been hidden before
         defaults.set(true, forKey: EMPTY_BILL)
-        
         
         // Force UserDefaults to save.
         defaults.synchronize()
@@ -200,7 +200,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
             // More than 10 minutes have passed since last restart, use empty bill
             billAmountTextField.text = convert_to_currency(0.0)
             hideEverythingBelowBill()
-            //resetMargins()
             defaults.set(convert_to_currency(0.0), forKey: LAST_BILL)
             
             // Force UserDefaults to save.
@@ -296,8 +295,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         var bill_amount = billAmountTextField.text!
         
-        print(bill_amount)
-
         let contains_invalid_chars : Bool = validateCurrencyOnly(bill_amount, currency_symbol, decimal_symbol, grouping_symbol)
         
         // Validate inputs for currency values
