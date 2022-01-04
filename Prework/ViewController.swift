@@ -4,14 +4,17 @@
 //
 //  Created by Giovanni Propersi on 12/27/21.
 //
-// TODO: GUI enhancements - keyboard present on load,
+//Icon = https://icons8.com/icon/113854/money
 
 import UIKit
 
-extension String {
-    //https://stackoverflow.com/questions/31746223/number-of-occurrences-of-substring-in-string-in-swift
-    func numberOfOccurrencesOf(string: String) -> Int {
-        return self.components(separatedBy:string).count - 1
+extension Decimal {
+    var formattedAmount: String? {
+        let formatter = NumberFormatter()
+        formatter.generatesDecimalNumbers = true
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: self as NSDecimalNumber)
     }
 }
 
@@ -27,6 +30,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     ]
     let LAST_BILL_TIME = "LastBillTime"
     let LAST_BILL = "LastBill"
+    let LAST_BILL_DECIMAL = "LastBillDecimal"
     let LAST_BILL_STRING_LENGTH = "LastBillSStringLength"
     let TEXT_COLOR_LIGHT_MODE : UIColor = UIColor.init(red: -0.027515370398759842, green: 0.32696807384490967, blue: -0.07128610461950302, alpha: 1.0)
     let TEXT_COLOR_DARK_MODE : UIColor = UIColor.systemGreen
@@ -48,12 +52,11 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var enterBillText: UILabel!
     
     @IBOutlet weak var movableLeftEdge: NSLayoutConstraint!
-    @IBOutlet weak var movableTopEdge: NSLayoutConstraint!
     @IBOutlet weak var movableRightEdge: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-    
+        
         billAmountTextField.delegate = self
         
         self.title = "Tip Calculator"
@@ -182,8 +185,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let current_time = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time > 5 {
+        if current_time - last_bill_time > 10 {
             // More than 10 minutes have passed since last restart, use empty bill
+            defaults.set(Locale.current.currencyCode, forKey: CURRENCY_SELECTION)
             billAmountTextField.text = convert_to_currency(0.0)
             hideEverythingBelowBill()
             defaults.set(convert_to_currency(0.0), forKey: LAST_BILL)
@@ -207,9 +211,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
             }
         }
         else {
-            // Less than 10 minutes have passed, use previous bill
-            //checkForCurrencyChange(last_bill)
-            billAmountTextField.text = last_bill
+            // Less than 10 minutes have passed, use previous bill, but convert
+            // currency if user changed currency
+            self.enterBillText.alpha = 0
+            let last_bill_dec_as_string: String = defaults.string(forKey: LAST_BILL_DECIMAL) ?? "0.0"
+            let last_bill_dec: Decimal = Decimal(string: last_bill_dec_as_string)!
+            billAmountTextField.text = convert_to_currency(last_bill_dec)
+            calculateTip(last_bill_dec)
         }
     }
     
@@ -227,13 +235,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         setTipPercentLabel(slider_tip)
         
         let last_bill = convert_to_decimal_from_currency(billAmountTextField.text!)
-        
+
         calculateTip(last_bill)
     }
-    
-//    func checkForCurrencyChange(_ last_bill: String) {
-//        print("Last bill is " + last_bill)
-//    }
     
     func convert_to_currency(_ input: Decimal) -> String {
         // Converts decimal to string using currencyFormatter
@@ -246,14 +250,14 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Converts from currency to decimal
         let currencyFormatter = getCurrencyFormatter()
         
-        let currency_symbol: String = currencyFormatter.locale.currencySymbol!
+        let currency_symbol: String = currencyFormatter.currencySymbol!
         let grouping_symbol: String = currencyFormatter.groupingSeparator!
         
         var string_input_modded = string_input
         
         string_input_modded = string_input_modded.replacingOccurrences(of: currency_symbol, with: "")
         string_input_modded = string_input_modded.replacingOccurrences(of: grouping_symbol, with: "")
-        
+
         return Decimal(string: string_input_modded)!
     }
 
@@ -270,6 +274,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         let everything_is_hidden = defaults.bool(forKey: EMPTY_BILL)
         let last_entered_bill = defaults.string(forKey: LAST_BILL) ?? convert_to_currency(0.0)
+        let last_entered_bill_decimal_format_as_string: String = defaults.string(forKey: LAST_BILL_DECIMAL) ?? "0.0"
+        let last_entered_bill_as_decimal: Decimal = Decimal(string: last_entered_bill_decimal_format_as_string)!
         
         if everything_is_hidden {
             // Slide in all inputs if everything is hidden after user begins to type in values
@@ -311,13 +317,20 @@ class ViewController: UIViewController, UITextFieldDelegate {
             else {
                 bill_amount_to_decimal = (Decimal(string: bill_amount) ?? 0) / 10
             }
-            
         }
+        
         else {
             // Slide digits over to the left
             if !bill_amount.contains(decimal_symbol) {
                 // Certain currencies contain no decimal
                 bill_amount_to_decimal = Decimal(string: bill_amount)!
+            }
+            else if last_entered_bill_as_decimal == (Decimal(string: bill_amount) ?? 0) {
+                // Off chance that user switches to a currency that doesn't use decimals.
+                // Delete would then multiply by 10 instead since previous bill would've been
+                // longer. i.e. YEN 10000 is shorter than $10000.00, so deleting with locale as
+                // USD would make it $100000.00
+                bill_amount_to_decimal = Decimal(string: bill_amount)! / 10
             }
             else {
                 bill_amount_to_decimal = Decimal(string: bill_amount)! * 10
@@ -332,7 +345,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         defaults.set(bill_amount_to_string!.count, forKey: LAST_BILL_STRING_LENGTH)
         defaults.set(Int(Date().timeIntervalSince1970), forKey: LAST_BILL_TIME)
         defaults.set(bill_amount_to_string, forKey: LAST_BILL)
-        
+        defaults.set(bill_amount_to_decimal.formattedAmount, forKey: LAST_BILL_DECIMAL)
+  
         // Force UserDefaults to save.
         defaults.synchronize()
     }
@@ -340,7 +354,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     func validateCurrencyOnly(_ user_input: String, _ currency_symbol: String, _ decimal_sep: String, _ grouping_sep: String) -> Bool {
         // Validates user input to prevent copy-pasting non-currency values
         // Provides true if values in string are only related to the locale's currency
-        let valid_characters = CharacterSet.init(charactersIn: "1234567890" + currency_symbol + " " + decimal_sep + grouping_sep).union(CharacterSet.whitespaces)
+        let valid_characters = CharacterSet.init(charactersIn: "1234567890" + currency_symbol + decimal_sep + grouping_sep).union(CharacterSet.whitespaces)
         let user_input_set : CharacterSet = CharacterSet.init(charactersIn: user_input)
         
         if user_input_set.isSubset(of: valid_characters) {
@@ -373,7 +387,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         currencyFormatter.usesGroupingSeparator = true
         currencyFormatter.numberStyle = .currency
         // Localize
-        //currencyFormatter.locale = Locale.current
         currencyFormatter.currencyCode = defaults.string(forKey: CURRENCY_SELECTION)
         return currencyFormatter
     }

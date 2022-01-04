@@ -9,8 +9,6 @@ import UIKit
 
 class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
     
-    
-    
     let defaults = UserDefaults.standard
     let USER_DEFINED_TIP = "UserDefinedTip"
     let USER_DEFINED_MAX = "UserDefinedMax"
@@ -41,6 +39,8 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         self.title = "Settings"
         defaultTip.delegate = self
         defaultMaxTip.delegate = self
+        
+        
         
         // "Done" button above keyboard for accepting user input values
         // https://www.youtube.com/watch?v=M_fP2i0tl0Q
@@ -77,6 +77,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         self.picker.delegate = self
         self.picker.dataSource = self
         
+        let currency_index = currencies.firstIndex(of: currency_chosen!)
+        picker.selectRow(currency_index!, inComponent: 0, animated: false)
+        
+        self.defaultTip.keyboardType = .numberPad
+        
         // Do any additional setup after loading the view.
     }
     
@@ -94,23 +99,28 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-            return currencies[row]
-        }
+        return currencies[row]
+    }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         self.currencyPicker.isHidden = false
         self.picker.isHidden = true
-        self.currencyPicker.text = currencies[row];
+        self.currencyPicker.text = currencies[row]
         defaults.set(currencies[row], forKey: CURRENCY_SELECTION)
         
         // Synchronize for currency code
         defaults.synchronize()
     }
-
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        self.currencyPicker.isHidden = true
-        self.picker.isHidden = false
-        return false
+ 
+    func textFieldShouldBeginEditing(_ textfield: UITextField) -> Bool {
+        switch textfield {
+        case currencyPicker:
+            self.currencyPicker.isHidden = true
+            self.picker.isHidden = false
+            return false
+        default:
+            return true
+        }
     }
     
     override func didReceiveMemoryWarning() {
