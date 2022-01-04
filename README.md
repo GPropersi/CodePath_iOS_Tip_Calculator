@@ -4,7 +4,7 @@
 
 Submitted by: Giovanni Propersi
 
-Time spent: **16** hours spent in total
+Time spent: **24** hours spent in total
 
 ## User Stories
 
@@ -24,19 +24,19 @@ The following **optional** features are implemented:
 The following **additional** features are implemented:
 
 - [X] Slider instead of segmented choice, with setting for max slider value.
+- [X] Setting to decide for a smooth or incremental slider experience.
 - [X] Automatically calculates tip while user inputs bill amount. 
 - [X] Prompts user with numpad only.
 - [X] Dark Mode with varying view colors
 - [X] Error messages in the settings menu if invalid values input
-- [X] Locked autorotation into portrait mode only
 - [X] Allows user to alternate currency chosen within the app
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
-<img src='https://i.imgur.com/6AwfVl0.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
-<img src='https://i.imgur.com/6AwfVl0.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='https://i.imgur.com/BxhHx5d.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='https://i.imgur.com/nAtXIzV.gif[/img]' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
@@ -51,7 +51,7 @@ This being my first iOS app, the initial challenge involved becoming familiar wi
 - Setting colors for the unsafe area of a View, discovered when the 'Unsafe' area's white background was covering up the battery and clock display. Set to be the SystemBackground color.
 - Determining how to see if 10 minutes had passed - just need a function to check the difference between two intervals in time.
 - Placing horizontal dividing lines in a view - ended up just needing a label with a background color, and making it 1px thick.
-- Forcing the app into only portrait mode took some digging on the internet...
+- Forcing the app into only portrait mode took some digging.
 - Constraining everything in the view before performing animations led to many constraint conflicts that
     led to a better definition of what constraints were needed.
 - Currency conversion led to the need to store workable numerical/decimal values while also working with strings to display, and learning how to use

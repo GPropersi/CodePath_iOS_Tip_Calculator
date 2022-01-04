@@ -9,20 +9,13 @@
 import UIKit
 
 extension Decimal {
+    // Extension to convert decimal to string with a max of 2 decimal places
     var formattedAmount: String? {
         let formatter = NumberFormatter()
         formatter.generatesDecimalNumbers = true
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         return formatter.string(from: self as NSDecimalNumber)
-    }
-}
-
-extension Decimal {
-    func roundDecimal() -> String {
-        let formatter = NumberFormatter()
-        formatter.minimumFractionDigits = 2
-        return formatter.string(from: self as NSDecimalNumber)!
     }
 }
 
@@ -81,7 +74,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Retrieve default/user preferred values for max and default tip
+        // Retrieve default/user preferred values for max, default tip, and light mode
         let default_tip = Int(defaults.string(forKey: USER_DEFINED_TIP) ?? "25")
         let default_max = Int(defaults.string(forKey:  USER_DEFINED_MAX) ?? "50")
         let default_view_mode = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
@@ -101,7 +94,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         // Check if 10 minutes have passed since User last entered bill, if so reset
         let last_entered_bill = defaults.string(forKey: LAST_BILL) ?? convert_to_currency(0.0)
-        let last_entered_bill_time = defaults.integer(forKey: LAST_BILL_TIME)
+        let last_entered_bill_time = defaults.integer(forKey: LAST_BILL_TIME)       // Default value is 0
         
         if last_entered_bill_time != 0 {
             checkIfTenMinutesSinceLastEntry(last_entered_bill_time, last_entered_bill)
@@ -116,7 +109,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBSegueAction func changeViews(_ coder: NSCoder) -> SettingsViewController? {
-        // Using to slide in initial text again
+        // Used to slide in initial text again if time has passed while on setting screen
         defaults.set(true, forKey: CHANGED_SCREENS)
         
         // Force UserDefaults to save.
@@ -125,7 +118,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     
     func hideEverythingBelowBill() {
-        // Hide everything not needed when bill is empty
+        // Hide everything not needed when first opening or after 10 minutes
         self.movableLeftEdge!.constant += self.view.bounds.width
         self.movableRightEdge!.constant -= self.view.bounds.width
         self.view.layoutIfNeeded()
@@ -139,7 +132,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     func slideInEverything() {
         // Slide everything back into view after user types in bill
-        // Hide get started text
+        // Hide get started text by fading it out
         // https://www.twilio.com/blog/2018/04/constraint-animations-ios-apps-xcode-swift.html
 
         let ANIMATION_SPEED : Double = 0.4
@@ -194,6 +187,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     
     func resetMargins() {
+        // Reset the layout to its original margins
         let original_margins: [CGFloat] = defaults.object(forKey: ORIGINAL_MARGIN) as! [CGFloat]
         self.movableLeftEdge!.constant = original_margins[0]
         self.movableRightEdge!.constant = original_margins[1]
@@ -204,7 +198,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let current_time = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time > 60 {
+        if current_time - last_bill_time > 600 {
             // More than 10 minutes have passed since last restart, use empty bill
             billAmountTextField.text = convert_to_currency(0.0)
             hideEverythingBelowBill()
@@ -228,7 +222,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
             }
         }
         else {
-            // Less than 10 minutes have passed, use previous bill, but convert
+            // Less than 10 minutes have passed, use previous bill, but convert to
             // currency if user changed currency
             self.enterBillText.alpha = 0
             let last_bill_dec_as_string: String = defaults.string(forKey: LAST_BILL_DECIMAL) ?? "0.0"
@@ -339,7 +333,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         else {
             // Slide digits over to the left
             if !bill_amount.contains(decimal_symbol) {
-                // Certain currencies contain no decimal
+                // Certain currencies contain no decimal, just shift over
                 bill_amount_to_decimal = Decimal(string: bill_amount)!
             }
             else if last_entered_bill_as_decimal == (Decimal(string: bill_amount) ?? 0) {
@@ -347,8 +341,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 // Delete would then multiply by 10 instead since previous bill would've been
                 // longer. i.e. YEN 10000 is shorter than $10000.00, so deleting with locale as
                 // USD would make it $100000.00
-                // if length of new > length of old, multiply by 10
                 if bill_amount.count > last_entered_bill_decimal_format_as_string.count {
+                    // Occurs when user adds a 0, so shift values to left
                     bill_amount_to_decimal = Decimal(string: bill_amount)! * 10
                 }
                 else {
@@ -357,6 +351,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 
             }
             else {
+                // When value contains a decimal and user adds a value to the end, shift values to left
                 bill_amount_to_decimal = Decimal(string: bill_amount)! * 10
             }
         }
@@ -393,7 +388,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Calculates tip and total based on input values
         // Get tip by multiplying bill by tip percentage
         var tip_percent = Decimal.init(floatLiteral: Double(tipPercentSlider.value))
-        tip_percent = Decimal(string: tip_percent.roundDecimal())!
+        tip_percent = Decimal(string: tip_percent.formattedAmount!)!
 
         let tip = bill * tip_percent
 
