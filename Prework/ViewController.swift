@@ -5,6 +5,9 @@
 //  Created by Giovanni Propersi on 12/27/21.
 //
 //Icon = https://icons8.com/icon/113854/money
+// TODO - Try keeping only decimal
+// TODO - String constants, look into best practice
+// TODO - Clean up free functions, replace with methods or properties
 
 import UIKit
 
@@ -29,7 +32,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         "Dark": .dark,
         "Light" : .light
     ]
-    let LAST_BILL_TIME = "LastBillTime"
+    let LAST_BILL_TIME_KEY = "LastBillTime"
     let LAST_BILL = "LastBill"
     let LAST_BILL_DECIMAL = "LastBillDecimal"
     let LAST_BILL_STRING_LENGTH = "LastBillSStringLength"
@@ -75,9 +78,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         super.viewWillAppear(animated)
         
         // Retrieve default/user preferred values for max, default tip, and light mode
-        let default_tip = Int(defaults.string(forKey: USER_DEFINED_TIP) ?? "25")
-        let default_max = Int(defaults.string(forKey:  USER_DEFINED_MAX) ?? "50")
-        let default_view_mode = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
+        let defaultTip = Int(defaults.string(forKey: USER_DEFINED_TIP) ?? "25")
+        let defaultMax = Int(defaults.string(forKey:  USER_DEFINED_MAX) ?? "50")
+        let defaultViewMode = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
         
         // Set unsafe area to system background color
         // https://developer.apple.com/forums/thread/682420
@@ -85,19 +88,23 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Set dark or light mode, and set text color
         // Set title color depending on dark or light mode
         //https://stackoverflow.com/questions/26008536/navigationbar-bar-tint-and-title-text-color-in-ios-8
-        setDarkOrLightModeSettings(default_view_mode)
+        setDarkOrLightModeSettings(defaultViewMode)
 
         // Set UserDefault values, and slider setting
-        setSliderMax(default_max!)
-        setTipSliderSelectedValue(default_tip!)
-        setTipPercentLabel(default_tip!)
+        setSliderMax(defaultMax!)
+        setTipSliderSelectedValue(defaultTip!)
+        setTipPercentLabel(defaultTip!)
         
         // Check if 10 minutes have passed since User last entered bill, if so reset
-        let last_entered_bill = defaults.string(forKey: LAST_BILL) ?? convert_to_currency(0.0)
-        let last_entered_bill_time = defaults.integer(forKey: LAST_BILL_TIME)       // Default value is 0
+        let lastEnteredBillTime: Int = defaults.integer(forKey: LAST_BILL_TIME_KEY)       // Default value is 0
         
-        if last_entered_bill_time != 0 {
-            checkIfTenMinutesSinceLastEntry(last_entered_bill_time, last_entered_bill)
+        if lastEnteredBillTime != 0 {
+            checkIfTenMinutesSinceLastEntry(lastEnteredBillTime)
+        }
+        else {
+            // Slides everything away on first time
+            billAmountTextField.text = convertToCurrency(0.0)
+            hideEverythingBelowBill()
         }
     }
     
@@ -157,16 +164,16 @@ class ViewController: UIViewController, UITextFieldDelegate {
          
     }
     
-    func setDarkOrLightModeSettings(_ chosen_view_mode: String) {
+    func setDarkOrLightModeSettings(_ chosenViewMode: String) {
         // Sets the view to chosen dark/light mode, and alters text to match the mode. Default is Light mode
-        overrideUserInterfaceStyle = VIEW_MODE[chosen_view_mode]!
+        overrideUserInterfaceStyle = VIEW_MODE[chosenViewMode]!
         
         let LABELS : [UILabel] = [tipAmountLabel, totalLabel, tipPercentOutput]
         
-        switch chosen_view_mode {
+        switch chosenViewMode {
         case "Dark":
-            for label_color in LABELS {
-                label_color.textColor = TEXT_COLOR_DARK_MODE
+            for labelColor in LABELS {
+                labelColor.textColor = TEXT_COLOR_DARK_MODE
             }
             billAmountTextField.textColor = TEXT_COLOR_DARK_MODE
             self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
@@ -175,8 +182,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
             self.navigationController?.navigationBar.scrollEdgeAppearance = standard
             
         default:
-            for label_color in LABELS {
-                label_color.textColor = TEXT_COLOR_LIGHT_MODE
+            for labelColor in LABELS {
+                labelColor.textColor = TEXT_COLOR_LIGHT_MODE
             }
             billAmountTextField.textColor = TEXT_COLOR_LIGHT_MODE
             self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
@@ -188,21 +195,22 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     func resetMargins() {
         // Reset the layout to its original margins
-        let original_margins: [CGFloat] = defaults.object(forKey: ORIGINAL_MARGIN) as! [CGFloat]
-        self.movableLeftEdge!.constant = original_margins[0]
-        self.movableRightEdge!.constant = original_margins[1]
+        let originalMargins: [CGFloat] = defaults.object(forKey: ORIGINAL_MARGIN) as! [CGFloat]
+        self.movableLeftEdge!.constant = originalMargins[0]
+        self.movableRightEdge!.constant = originalMargins[1]
         self.view.layoutIfNeeded()
     }
     
-    func checkIfTenMinutesSinceLastEntry(_ last_bill_time: Int, _ last_bill: String) {
+    func checkIfTenMinutesSinceLastEntry(_ lastBillTime: Int) {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
-        let current_time = Int(Date().timeIntervalSince1970)
+        let currentTime = Int(Date().timeIntervalSince1970)
         
-        if current_time - last_bill_time > 600 {
+        if currentTime - lastBillTime > 600 {
             // More than 10 minutes have passed since last restart, use empty bill
-            billAmountTextField.text = convert_to_currency(0.0)
+            print("Hit here")
+            billAmountTextField.text = convertToCurrency(0.0)
             hideEverythingBelowBill()
-            defaults.set(convert_to_currency(0.0), forKey: LAST_BILL)
+            defaults.set(convertToCurrency(0.0), forKey: LAST_BILL)
             
             // Force UserDefaults to save.
             defaults.synchronize()
@@ -225,10 +233,10 @@ class ViewController: UIViewController, UITextFieldDelegate {
             // Less than 10 minutes have passed, use previous bill, but convert to
             // currency if user changed currency
             self.enterBillText.alpha = 0
-            let last_bill_dec_as_string: String = defaults.string(forKey: LAST_BILL_DECIMAL) ?? "0.0"
-            let last_bill_dec: Decimal = Decimal(string: last_bill_dec_as_string)!
-            billAmountTextField.text = convert_to_currency(last_bill_dec)
-            calculateTip(last_bill_dec)
+            let lastBillDecimalAsString: String = defaults.string(forKey: LAST_BILL_DECIMAL) ?? "0.0"
+            let lastBillDecimal: Decimal = Decimal(string: lastBillDecimalAsString)!
+            billAmountTextField.text = convertToCurrency(lastBillDecimal)
+            calculateTip(lastBillDecimal)
         }
     }
     
@@ -237,39 +245,39 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Recalculates tip/bill based on new chosen tip percentage
         // Sets slider to rounded value so it 'clicks' into place
         
-        let smooth_slider_setting = defaults.bool(forKey: SLIDER_SETTING)
-        let slider_tip = Int(round(tipPercentSlider.value * 100))
-        let slider_rounded_value = Float(slider_tip) / 100.0
-        if !smooth_slider_setting {
-            tipPercentSlider.value = slider_rounded_value
+        let smoothSliderSetting = defaults.bool(forKey: SLIDER_SETTING)
+        let sliderTip = Int(round(tipPercentSlider.value * 100))
+        let sliderRoundedValue = Float(sliderTip) / 100.0
+        if !smoothSliderSetting {
+            tipPercentSlider.value = sliderRoundedValue
         }
-        setTipPercentLabel(slider_tip)
+        setTipPercentLabel(sliderTip)
         
-        let last_bill = convert_to_decimal_from_currency(billAmountTextField.text!)
+        let lastBill = convertToDecimalFromCurrency(billAmountTextField.text!)
 
-        calculateTip(last_bill)
+        calculateTip(lastBill)
     }
     
-    func convert_to_currency(_ input: Decimal) -> String {
+    func convertToCurrency(_ input: Decimal) -> String {
         // Converts decimal to string using currencyFormatter
         let currencyFormatter = getCurrencyFormatter()
         
         return currencyFormatter.string(from: NSDecimalNumber(decimal: input))!
     }
     
-    func convert_to_decimal_from_currency(_ string_input: String) -> Decimal {
+    func convertToDecimalFromCurrency(_ stringInput: String) -> Decimal {
         // Converts from currency to decimal
         let currencyFormatter = getCurrencyFormatter()
         
-        let currency_symbol: String = currencyFormatter.currencySymbol!
-        let grouping_symbol: String = currencyFormatter.groupingSeparator!
+        let currencySymbol: String = currencyFormatter.currencySymbol!
+        let groupingSymbol: String = currencyFormatter.groupingSeparator!
         
-        var string_input_modded = string_input
+        var stringInputModded = stringInput
         
-        string_input_modded = string_input_modded.replacingOccurrences(of: currency_symbol, with: "")
-        string_input_modded = string_input_modded.replacingOccurrences(of: grouping_symbol, with: "")
+        stringInputModded = stringInputModded.replacingOccurrences(of: currencySymbol, with: "")
+        stringInputModded = stringInputModded.replacingOccurrences(of: groupingSymbol, with: "")
 
-        return Decimal(string: string_input_modded)!
+        return Decimal(string: stringInputModded)!
     }
 
     @IBAction func validateBillInputs(_ textField: UITextField) {
@@ -279,104 +287,115 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         let currencyFormatter = getCurrencyFormatter()
 
-        let currency_symbol: String = currencyFormatter.currencySymbol!
-        let decimal_symbol: String = currencyFormatter.decimalSeparator!
-        let grouping_symbol: String = currencyFormatter.groupingSeparator!
+        let currencySymbol: String = currencyFormatter.currencySymbol!
+        let decimalSymbol: String = currencyFormatter.decimalSeparator!
+        let groupingSymbol: String = currencyFormatter.groupingSeparator!
         
-        let everything_is_hidden = defaults.bool(forKey: EMPTY_BILL)
-        let last_entered_bill = defaults.string(forKey: LAST_BILL) ?? convert_to_currency(0.0)
-        let last_entered_bill_decimal_format_as_string: String = defaults.string(forKey: LAST_BILL_DECIMAL) ?? "0.0"
-        let last_entered_bill_as_decimal: Decimal = Decimal(string: last_entered_bill_decimal_format_as_string)!
+        let everythingIsHidden = defaults.bool(forKey: EMPTY_BILL)
+        let lastEnteredBillString = defaults.string(forKey: LAST_BILL) ?? convertToCurrency(0.0)
+        let lastEnteredBillDecimalAsString: String = defaults.string(forKey: LAST_BILL_DECIMAL) ?? "0.0"
+        let lastEnteredBillDecimalFromString: Decimal = Decimal(string: lastEnteredBillDecimalAsString)!
         
-        if everything_is_hidden {
+        print(lastEnteredBillString)
+        print(lastEnteredBillDecimalAsString)
+        
+        var billAmount = billAmountTextField.text!
+        let containsDecimalSymbol: Bool = lastEnteredBillString.contains(decimalSymbol)
+        
+        if everythingIsHidden {
             // Slide in all inputs if everything is hidden after user begins to type in values
             defaults.set(false, forKey: EMPTY_BILL)
             slideInEverything()
             resetMargins()
         }
         
-        var bill_amount = billAmountTextField.text!
-        
-        let contains_invalid_chars : Bool = validateCurrencyOnly(bill_amount, currency_symbol, decimal_symbol, grouping_symbol)
+        let containsInvalidChars : Bool = validateCurrencyOnly(billAmount, currencySymbol, decimalSymbol, groupingSymbol)
         
         // Validate inputs for currency values
-        if contains_invalid_chars {
-            billAmountTextField.text = last_entered_bill
+        if containsInvalidChars {
+            billAmountTextField.text = lastEnteredBillString
             return
         }
         
-        let last_bill_length = defaults.integer(forKey: LAST_BILL_STRING_LENGTH)
-        var user_pressed_delete: Bool
+        let lastBillLength = defaults.integer(forKey: LAST_BILL_STRING_LENGTH)
+        var userPressedDelete: Bool
         
-        if last_bill_length > bill_amount.count {
+        if lastBillLength > billAmount.count {
             // Length of current input is shorter than before -> user pressed delete
-            user_pressed_delete = true
+            userPressedDelete = true
         }
         else {
-            user_pressed_delete = false
+            userPressedDelete = false
         }
         
-        bill_amount = bill_amount.replacingOccurrences(of: currency_symbol, with: "")
-        bill_amount = bill_amount.replacingOccurrences(of: grouping_symbol, with: "")
-        var bill_amount_to_decimal: Decimal
+        billAmount = billAmount.replacingOccurrences(of: currencySymbol, with: "")
+        billAmount = billAmount.replacingOccurrences(of: groupingSymbol, with: "")
+        var billAmountToDecimal: Decimal
         
-        if user_pressed_delete {
+        if userPressedDelete {
             // Slide digits over one to the right
-            if !bill_amount.contains(decimal_symbol) {
-                bill_amount_to_decimal = Decimal(string: bill_amount) ?? 0
+            if !billAmount.contains(decimalSymbol) {
+                billAmountToDecimal = Decimal(string: billAmount) ?? 0
             }
             else {
-                bill_amount_to_decimal = (Decimal(string: bill_amount) ?? 0) / 10
+                billAmountToDecimal = (Decimal(string: billAmount) ?? 0) / 10
             }
         }
         
         else {
             // Slide digits over to the left
-            if !bill_amount.contains(decimal_symbol) {
+            if !billAmount.contains(decimalSymbol) {
                 // Certain currencies contain no decimal, just shift over
-                bill_amount_to_decimal = Decimal(string: bill_amount)!
+                billAmountToDecimal = Decimal(string: billAmount)!
+                
+                if everythingIsHidden && containsDecimalSymbol{
+                    // When user first opens the app, should start at the first cent, but only if currency contains a decimal
+                    billAmountToDecimal /= 100
+                }
+                
             }
-            else if last_entered_bill_as_decimal == (Decimal(string: bill_amount) ?? 0) {
+            else if lastEnteredBillDecimalFromString == (Decimal(string: billAmount) ?? 0) {
                 // Off chance that user switches to a currency that doesn't use decimals.
                 // Delete would then multiply by 10 instead since previous bill would've been
                 // longer. i.e. YEN 10000 is shorter than $10000.00, so deleting with locale as
                 // USD would make it $100000.00
-                if bill_amount.count > last_entered_bill_decimal_format_as_string.count {
+                if billAmount.count > lastEnteredBillDecimalAsString.count {
                     // Occurs when user adds a 0, so shift values to left
-                    bill_amount_to_decimal = Decimal(string: bill_amount)! * 10
+                    
+                    billAmountToDecimal = Decimal(string: billAmount)! * 10
                 }
                 else {
-                    bill_amount_to_decimal = Decimal(string: bill_amount)! / 10
+                    billAmountToDecimal = Decimal(string: billAmount)! / 10
                 }
-                
             }
             else {
                 // When value contains a decimal and user adds a value to the end, shift values to left
-                bill_amount_to_decimal = Decimal(string: bill_amount)! * 10
+                
+                billAmountToDecimal = Decimal(string: billAmount)! * 10
             }
         }
         
-        let bill_amount_to_string = currencyFormatter.string(from: NSDecimalNumber(decimal: bill_amount_to_decimal))
+        let billAmountToString = currencyFormatter.string(from: NSDecimalNumber(decimal: billAmountToDecimal))
 
-        billAmountTextField.text = bill_amount_to_string
-        calculateTip(bill_amount_to_decimal)
+        billAmountTextField.text = billAmountToString
+        calculateTip(billAmountToDecimal)
         
-        defaults.set(bill_amount_to_string!.count, forKey: LAST_BILL_STRING_LENGTH)
-        defaults.set(Int(Date().timeIntervalSince1970), forKey: LAST_BILL_TIME)
-        defaults.set(bill_amount_to_string, forKey: LAST_BILL)
-        defaults.set(bill_amount_to_decimal.formattedAmount, forKey: LAST_BILL_DECIMAL)
+        defaults.set(billAmountToString!.count, forKey: LAST_BILL_STRING_LENGTH)
+        defaults.set(Int(Date().timeIntervalSince1970), forKey: LAST_BILL_TIME_KEY)
+        defaults.set(billAmountToString, forKey: LAST_BILL)
+        defaults.set(billAmountToDecimal.formattedAmount, forKey: LAST_BILL_DECIMAL)
   
         // Force UserDefaults to save.
         defaults.synchronize()
     }
     
-    func validateCurrencyOnly(_ user_input: String, _ currency_symbol: String, _ decimal_sep: String, _ grouping_sep: String) -> Bool {
+    func validateCurrencyOnly(_ userInput: String, _ currencySymbol: String, _ decimalSep: String, _ groupingSep: String) -> Bool {
         // Validates user input to prevent copy-pasting non-currency values
         // Provides true if values in string are only related to the locale's currency
-        let valid_characters = CharacterSet.init(charactersIn: "1234567890" + currency_symbol + decimal_sep + grouping_sep).union(CharacterSet.whitespaces)
-        let user_input_set : CharacterSet = CharacterSet.init(charactersIn: user_input)
+        let validCharacters = CharacterSet.init(charactersIn: "1234567890" + currencySymbol + decimalSep + groupingSep).union(CharacterSet.whitespaces)
+        let userInputSet : CharacterSet = CharacterSet.init(charactersIn: userInput)
         
-        if user_input_set.isSubset(of: valid_characters) {
+        if userInputSet.isSubset(of: validCharacters) {
             return false
         }
         else {
@@ -387,19 +406,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
     func calculateTip(_ bill: Decimal) {
         // Calculates tip and total based on input values
         // Get tip by multiplying bill by tip percentage
-        var tip_percent = Decimal.init(floatLiteral: Double(tipPercentSlider.value))
-        tip_percent = Decimal(string: tip_percent.formattedAmount!)!
+        var tipPercent = Decimal.init(floatLiteral: Double(tipPercentSlider.value))
+        tipPercent = Decimal(string: tipPercent.formattedAmount!)!
 
-        let tip = bill * tip_percent
+        let tip = bill * tipPercent
 
         // Get total by adding bill and total amount
         let total = bill + tip
 
         // Update the tip label
-        tipAmountLabel.text = convert_to_currency(tip)
+        tipAmountLabel.text = convertToCurrency(tip)
         
         // Update the total label
-        totalLabel.text = convert_to_currency(total)
+        totalLabel.text = convertToCurrency(total)
     }
     
     func getCurrencyFormatter() -> NumberFormatter {
@@ -412,20 +431,20 @@ class ViewController: UIViewController, UITextFieldDelegate {
         return currencyFormatter
     }
     
-    func setSliderMax(_ max_tip: Int) {
+    func setSliderMax(_ maxTip: Int) {
         // Update slider max label, and the slider itself with the max value
-        maxSliderLabel.text = "\(max_tip)" + "%"
-        tipPercentSlider.maximumValue = Float(max_tip) / 100.0
+        maxSliderLabel.text = "\(maxTip)" + "%"
+        tipPercentSlider.maximumValue = Float(maxTip) / 100.0
     }
     
-    func setTipSliderSelectedValue(_ default_tip: Int) {
+    func setTipSliderSelectedValue(_ defaultTip: Int) {
         // Set the tip slider selected value based user preferred value, or default value
-        tipPercentSlider.value = Float(default_tip) / 100.0
+        tipPercentSlider.value = Float(defaultTip) / 100.0
     }
     
-    func setTipPercentLabel(_ tip_for_label: Int) {
+    func setTipPercentLabel(_ tipForLabel: Int) {
         // Set the tip percent label based on user preferred value, or default value
-        tipPercentOutput.text = String(format: "%2i%%", tip_for_label)
+        tipPercentOutput.text = String(format: "%2i%%", tipForLabel)
     }
 }
 

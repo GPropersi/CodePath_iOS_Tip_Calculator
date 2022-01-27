@@ -55,20 +55,20 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         defaultMaxTip.text = defaultMaxTip.text! + "%"
         
         // Set slider setting, based on user preference
-        let smooth_toggle_setting = defaults.bool(forKey: SLIDER_SETTING)
+        let smoothToggleSetting = defaults.bool(forKey: SLIDER_SETTING)
         
-        smoothSliderToggle.setOn(smooth_toggle_setting, animated: true)
+        smoothSliderToggle.setOn(smoothToggleSetting, animated: true)
         
-        let dark_or_light = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
+        let darkOrLight = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
         
-        setViewMode(dark_or_light)
+        setViewMode(darkOrLight)
         
-        let currency_chosen = defaults.string(forKey: CURRENCY_SELECTION) ?? Locale.current.currencyCode
+        let currencyChosen = defaults.string(forKey: CURRENCY_SELECTION) ?? Locale.current.currencyCode
         
         currencies = Locale.isoCurrencyCodes
         
         picker.isHidden = true
-        currencyPicker.text = currency_chosen
+        currencyPicker.text = currencyChosen
         
         // Picker view
         // https://stackoverflow.com/questions/36193009/uipickerview-pop-up
@@ -77,8 +77,8 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         self.picker.delegate = self
         self.picker.dataSource = self
         
-        let currency_index = currencies.firstIndex(of: currency_chosen!)
-        picker.selectRow(currency_index!, inComponent: 0, animated: false)
+        let currencyIndex = currencies.firstIndex(of: currencyChosen!)
+        picker.selectRow(currencyIndex!, inComponent: 0, animated: false)
         
         self.defaultTip.keyboardType = .numberPad
         
@@ -151,43 +151,43 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         // Border editing - https://stackoverflow.com/questions/53682936/how-to-change-uitextfield-border-when-selected/53683159
         
         // Pull current valid inputs of default tip and max tip for comparison
-        let current_tip_default = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
-        let current_tip_max = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
+        let currentTipDefault = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
+        let currentTipMax = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
         
-        var default_tip_text_input : String = defaultTip.text!
+        var defaultTipTextInput : String = defaultTip.text!
         
-        guard default_tip_text_input != "" else {
+        guard defaultTipTextInput != "" else {
             // Text is empty, replace with default on exit
-            defaultTip.text = current_tip_default + "%"
+            defaultTip.text = currentTipDefault + "%"
             return
         }
         
-        default_tip_text_input = default_tip_text_input.replacingOccurrences(of: "%", with: "")
+        defaultTipTextInput = defaultTipTextInput.replacingOccurrences(of: "%", with: "")
         
-        let default_tip_text_input_integer = Int(default_tip_text_input)!
+        let defaultTipTextInputInteger = Int(defaultTipTextInput)!
         
-        if default_tip_text_input_integer > Int(current_tip_max)! {
+        if defaultTipTextInputInteger > Int(currentTipMax)! {
             // Tip default can't be greater than tip max
             defaultTip.layer.borderColor = UIColor.red.cgColor
             defaultTip.layer.borderWidth = 2.0
             defaultTipError.text = "Default tip greater than max."
-            defaultTip.text = current_tip_default + "%"
+            defaultTip.text = currentTipDefault + "%"
             return
         }
-        else if default_tip_text_input_integer < 0 {
+        else if defaultTipTextInputInteger < 0 {
             // User input tip percent cannot be below 0
             defaultTip.layer.borderColor = UIColor.red.cgColor
             defaultTip.layer.borderWidth = 2.0
             defaultTipError.text = "Default tip cannot be less than 0%."
-            defaultTip.text = current_tip_default + "%"
+            defaultTip.text = currentTipDefault + "%"
             return
         }
         else {
             // User input for default tip is valid, store in UserDefaults, display
             defaultTip.layer.borderWidth = 0            // Clear error border
             defaultTipError.text = ""                   // Clear error
-            defaults.set(default_tip_text_input, forKey: USER_DEFINED_TIP)
-            defaultTip.text = default_tip_text_input + "%"
+            defaults.set(defaultTipTextInput, forKey: USER_DEFINED_TIP)
+            defaultTip.text = defaultTipTextInput + "%"
             
             // Force UserDefaults to save.
             defaults.synchronize()
@@ -203,36 +203,36 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         // Border editing - https://stackoverflow.com/questions/53682936/how-to-change-uitextfield-border-when-selected/53683159
         
         // Pull current valid inputs of default tip and max tip for comparison
-        let current_tip_default = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
-        let current_tip_max = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
+        let currentTipDefault = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
+        let currentTipMax = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
         
-        var max_tip_text_input : String = sender.text!
+        var maxTipTextInput : String = sender.text!
         
-        guard max_tip_text_input != "" else {
+        guard maxTipTextInput != "" else {
             // Text is empty, replace with default on exit
-            defaultMaxTip.text = current_tip_max + "%"
+            defaultMaxTip.text = currentTipMax + "%"
             return
         }
         
-        max_tip_text_input = max_tip_text_input.replacingOccurrences(of: "%", with: "")
+        maxTipTextInput = maxTipTextInput.replacingOccurrences(of: "%", with: "")
                                       
-        let max_tip_text_input_integer = Int(max_tip_text_input)!
+        let maxTipTextInputInteger = Int(maxTipTextInput)!
         
-        if Int(current_tip_default)! > max_tip_text_input_integer {
+        if Int(currentTipDefault)! > maxTipTextInputInteger {
             // Tip max can't be less than tip max
             defaultMaxTip.layer.borderColor = UIColor.red.cgColor
             defaultMaxTip.layer.borderWidth = 2.0
             maxTipError.text = "Max tip cannot be less than default tip."
-            defaultMaxTip.text = current_tip_max + "%"
+            defaultMaxTip.text = currentTipMax + "%"
             return
         }
         
-        else if max_tip_text_input_integer < 15 || max_tip_text_input_integer > 100 {
+        else if maxTipTextInputInteger < 15 || maxTipTextInputInteger > 100 {
             // User input max default cannot be less than 15 or greater than 100
             defaultMaxTip.layer.borderColor = UIColor.red.cgColor
             defaultMaxTip.layer.borderWidth = 2.0
             maxTipError.text = "Value must be >15%, and <100%."
-            defaultMaxTip.text = current_tip_max + "%"
+            defaultMaxTip.text = currentTipMax + "%"
             return
         }
         
@@ -240,8 +240,8 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
             // User input for max tip percentage is valid
             defaultMaxTip.layer.borderWidth = 0         // Clear error border
             maxTipError.text = ""                       // Clear error
-            defaults.set(max_tip_text_input_integer, forKey: USER_DEFINED_MAX)
-            defaultMaxTip.text = max_tip_text_input + "%"
+            defaults.set(maxTipTextInputInteger, forKey: USER_DEFINED_MAX)
+            defaultMaxTip.text = maxTipTextInput + "%"
             
             // Force UserDefaults to save.
             defaults.synchronize()
@@ -264,13 +264,13 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         defaults.synchronize()
     }
     
-    func setViewMode(_ dark_or_light: String) {
+    func setViewMode(_ darkOrLight: String) {
         // Sets the view mode for dark or light
         
-        switch dark_or_light {
+        switch darkOrLight {
         case "Dark" :
             darkModeToggle.setOn(true, animated: true)
-            overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
+            overrideUserInterfaceStyle = VIEW_MODE[darkOrLight]!
             defaultTip.backgroundColor = UIColor.systemGray2
             defaultMaxTip.backgroundColor = UIColor.systemGray2
             currencyPicker.backgroundColor = UIColor.systemGray2
@@ -282,7 +282,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         default :
             darkModeToggle.setOn(false, animated: true)
             self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
-            overrideUserInterfaceStyle = VIEW_MODE[dark_or_light]!
+            overrideUserInterfaceStyle = VIEW_MODE[darkOrLight]!
             defaultTip.backgroundColor = UIColor.systemBackground
             defaultMaxTip.backgroundColor = UIColor.systemBackground
             currencyPicker.backgroundColor = UIColor.systemBackground
@@ -295,9 +295,9 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
     
     @IBAction func toggleSliderSetting(_ sender: Any) {
         // Set smooth slider default value
-        let current_value = defaults.bool(forKey: SLIDER_SETTING)
+        let currentValue = defaults.bool(forKey: SLIDER_SETTING)
         
-        if current_value {
+        if currentValue {
             defaults.set(false, forKey: SLIDER_SETTING)
         }
         else {
