@@ -10,16 +10,6 @@ import UIKit
 class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
     
     let defaults = UserDefaults.standard
-    let USER_DEFINED_TIP = "UserDefinedTip"
-    let USER_DEFINED_MAX = "UserDefinedMax"
-    let USER_DEFINED_APPEARANCE = "UserDefinedAppearance"
-    let VIEW_MODE: [String : UIUserInterfaceStyle] = [
-        "Dark": .dark,
-        "Light" : .light
-    ]
-    let SLIDER_SETTING = "SliderSetting"
-    let CHANGED_SCREENS = "ChangedScreens"
-    let CURRENCY_SELECTION = "CurrencySelection"
 
     @IBOutlet weak var defaultTip: UITextField!
     @IBOutlet weak var defaultMaxTip: UITextField!
@@ -40,30 +30,39 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         defaultTip.delegate = self
         defaultMaxTip.delegate = self
         
-        
-        
         // "Done" button above keyboard for accepting user input values
         // https://www.youtube.com/watch?v=M_fP2i0tl0Q
         addDoneToKeyboard(defaultTip)
         addDoneToKeyboard(defaultMaxTip)
         
         // Set to user defined tip if previously defined
-        defaultTip.text = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
+        defaultTip.text = defaults.string(forKey: Constants.Storyboard.userDefinedTip) ?? "25"
         defaultTip.text = defaultTip.text! + "%"
         
-        defaultMaxTip.text = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
+        defaultMaxTip.text = defaults.string(forKey: Constants.Storyboard.userDefinedMax) ?? "50"
         defaultMaxTip.text = defaultMaxTip.text! + "%"
         
         // Set slider setting, based on user preference
-        let smoothToggleSetting = defaults.bool(forKey: SLIDER_SETTING)
+        let smoothToggleSetting = defaults.bool(forKey: Constants.Storyboard.sliderSetting)
         
         smoothSliderToggle.setOn(smoothToggleSetting, animated: true)
         
-        let darkOrLight = defaults.string(forKey: USER_DEFINED_APPEARANCE) ?? "Light"
+        let darkOrLight = defaults.string(forKey: Constants.Storyboard.userDefinedAppearance) ?? "Light"
+        let textInputFields: [UITextField] = [defaultTip, defaultMaxTip, currencyPicker]
         
-        setViewMode(darkOrLight)
+        switch darkOrLight {
+        case "Light":
+            darkModeToggle.setOn(false, animated: true)
+            self.view.setDarkOrLightViewModeForSettingsScreen(darkOrLight: "Light", textInputFields: textInputFields, darkModeToggle: darkModeToggle)
+            navigationController?.setDarkOrLightNavigationMode(darkOrLight: "Light")
         
-        let currencyChosen = defaults.string(forKey: CURRENCY_SELECTION) ?? Locale.current.currencyCode
+        default :
+            darkModeToggle.setOn(true, animated: true)
+            self.view.setDarkOrLightViewModeForSettingsScreen(darkOrLight: "Dark", textInputFields: textInputFields, darkModeToggle: darkModeToggle)
+            navigationController?.setDarkOrLightNavigationMode(darkOrLight: "Dark")
+        }
+        
+        let currencyChosen = defaults.string(forKey: Constants.Storyboard.currencySelection) ?? Locale.current.currencyCode
         
         currencies = Locale.isoCurrencyCodes
         
@@ -85,11 +84,6 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         // Do any additional setup after loading the view.
     }
     
-    @objc private func didTapDone() {
-        defaultTip.resignFirstResponder()
-        defaultMaxTip.resignFirstResponder()
-    }
-    
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
@@ -106,7 +100,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         self.currencyPicker.isHidden = false
         self.picker.isHidden = true
         self.currencyPicker.text = currencies[row]
-        defaults.set(currencies[row], forKey: CURRENCY_SELECTION)
+        defaults.set(currencies[row], forKey: Constants.Storyboard.currencySelection)
         
         // Synchronize for currency code
         defaults.synchronize()
@@ -144,6 +138,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         frame.inputAccessoryView = toolBar
     }
     
+    @objc private func didTapDone() {
+        defaultTip.resignFirstResponder()
+        defaultMaxTip.resignFirstResponder()
+    }
+    
     @IBAction func defaultTipEndedEditing(_ sender: UITextField) {
         // When ending editing for the default tip textbox, add % to the
         // textfields. Run comparisons to verify valid input for default tip percentages.
@@ -151,8 +150,8 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         // Border editing - https://stackoverflow.com/questions/53682936/how-to-change-uitextfield-border-when-selected/53683159
         
         // Pull current valid inputs of default tip and max tip for comparison
-        let currentTipDefault = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
-        let currentTipMax = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
+        let currentTipDefault = defaults.string(forKey: Constants.Storyboard.userDefinedTip) ?? "25"
+        let currentTipMax = defaults.string(forKey: Constants.Storyboard.userDefinedMax) ?? "50"
         
         var defaultTipTextInput : String = defaultTip.text!
         
@@ -168,25 +167,23 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         
         if defaultTipTextInputInteger > Int(currentTipMax)! {
             // Tip default can't be greater than tip max
-            defaultTip.layer.borderColor = UIColor.red.cgColor
-            defaultTip.layer.borderWidth = 2.0
+            defaultTip.addErrorOutlineAndColor()
             defaultTipError.text = "Default tip greater than max."
             defaultTip.text = currentTipDefault + "%"
             return
         }
         else if defaultTipTextInputInteger < 0 {
             // User input tip percent cannot be below 0
-            defaultTip.layer.borderColor = UIColor.red.cgColor
-            defaultTip.layer.borderWidth = 2.0
+            defaultTip.addErrorOutlineAndColor()
             defaultTipError.text = "Default tip cannot be less than 0%."
             defaultTip.text = currentTipDefault + "%"
             return
         }
         else {
             // User input for default tip is valid, store in UserDefaults, display
-            defaultTip.layer.borderWidth = 0            // Clear error border
+            defaultTip.removeErrorOutlineAndColor()           // Clear error border
             defaultTipError.text = ""                   // Clear error
-            defaults.set(defaultTipTextInput, forKey: USER_DEFINED_TIP)
+            defaults.set(defaultTipTextInput, forKey: Constants.Storyboard.userDefinedTip)
             defaultTip.text = defaultTipTextInput + "%"
             
             // Force UserDefaults to save.
@@ -195,7 +192,6 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         }
     }
     
-    
     @IBAction func maxTipEndedEditing(_ sender: UITextField) {
         // When ending editing for the max tip textbox, add % to the
         // textfields. Run comparisons to verify valid input for max tip percentages.
@@ -203,8 +199,8 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         // Border editing - https://stackoverflow.com/questions/53682936/how-to-change-uitextfield-border-when-selected/53683159
         
         // Pull current valid inputs of default tip and max tip for comparison
-        let currentTipDefault = defaults.string(forKey: USER_DEFINED_TIP) ?? "25"
-        let currentTipMax = defaults.string(forKey: USER_DEFINED_MAX) ?? "50"
+        let currentTipDefault = defaults.string(forKey: Constants.Storyboard.userDefinedTip) ?? "25"
+        let currentTipMax = defaults.string(forKey: Constants.Storyboard.userDefinedMax) ?? "50"
         
         var maxTipTextInput : String = sender.text!
         
@@ -220,8 +216,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         
         if Int(currentTipDefault)! > maxTipTextInputInteger {
             // Tip max can't be less than tip max
-            defaultMaxTip.layer.borderColor = UIColor.red.cgColor
-            defaultMaxTip.layer.borderWidth = 2.0
+            defaultMaxTip.addErrorOutlineAndColor()
             maxTipError.text = "Max tip cannot be less than default tip."
             defaultMaxTip.text = currentTipMax + "%"
             return
@@ -229,8 +224,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         
         else if maxTipTextInputInteger < 15 || maxTipTextInputInteger > 100 {
             // User input max default cannot be less than 15 or greater than 100
-            defaultMaxTip.layer.borderColor = UIColor.red.cgColor
-            defaultMaxTip.layer.borderWidth = 2.0
+            defaultMaxTip.addErrorOutlineAndColor()
             maxTipError.text = "Value must be >15%, and <100%."
             defaultMaxTip.text = currentTipMax + "%"
             return
@@ -238,9 +232,9 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         
         else {
             // User input for max tip percentage is valid
-            defaultMaxTip.layer.borderWidth = 0         // Clear error border
+            defaultMaxTip.removeErrorOutlineAndColor()  // Clear error border
             maxTipError.text = ""                       // Clear error
-            defaults.set(maxTipTextInputInteger, forKey: USER_DEFINED_MAX)
+            defaults.set(maxTipTextInputInteger, forKey: Constants.Storyboard.userDefinedMax)
             defaultMaxTip.text = maxTipTextInput + "%"
             
             // Force UserDefaults to save.
@@ -251,57 +245,31 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UIPickerVie
     
     @IBAction func setUserDefaultViewMode(_ sender: Any) {
         // Set user default view mode based on change toggle value
+        let textInputFields: [UITextField] = [defaultTip, defaultMaxTip, currencyPicker]
         if darkModeToggle.isOn {
-            defaults.set("Dark", forKey: USER_DEFINED_APPEARANCE)
-            setViewMode("Dark")
+            defaults.set("Dark", forKey: Constants.Storyboard.userDefinedAppearance)
+            self.view.setDarkOrLightViewModeForSettingsScreen(darkOrLight: "Dark", textInputFields: textInputFields, darkModeToggle: darkModeToggle)
+            navigationController?.setDarkOrLightNavigationMode(darkOrLight: "Dark")
         }
         else {
-            defaults.set("Light", forKey: USER_DEFINED_APPEARANCE)
-            setViewMode("Light")
+            defaults.set("Light", forKey: Constants.Storyboard.userDefinedAppearance)
+            self.view.setDarkOrLightViewModeForSettingsScreen(darkOrLight: "Light", textInputFields: textInputFields, darkModeToggle: darkModeToggle)
+            navigationController?.setDarkOrLightNavigationMode(darkOrLight: "Light")
         }
         
         // Force UserDefaults to save.
         defaults.synchronize()
     }
     
-    func setViewMode(_ darkOrLight: String) {
-        // Sets the view mode for dark or light
-        
-        switch darkOrLight {
-        case "Dark" :
-            darkModeToggle.setOn(true, animated: true)
-            overrideUserInterfaceStyle = VIEW_MODE[darkOrLight]!
-            defaultTip.backgroundColor = UIColor.systemGray2
-            defaultMaxTip.backgroundColor = UIColor.systemGray2
-            currencyPicker.backgroundColor = UIColor.systemGray2
-            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
-            self.navigationController?.navigationBar.backgroundColor = UIColor.black
-            let standard = self.navigationController?.navigationBar.standardAppearance
-            self.navigationController?.navigationBar.scrollEdgeAppearance = standard
-            
-        default :
-            darkModeToggle.setOn(false, animated: true)
-            self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
-            overrideUserInterfaceStyle = VIEW_MODE[darkOrLight]!
-            defaultTip.backgroundColor = UIColor.systemBackground
-            defaultMaxTip.backgroundColor = UIColor.systemBackground
-            currencyPicker.backgroundColor = UIColor.systemBackground
-            self.navigationController?.navigationBar.backgroundColor = UIColor.darkGray
-            let standard = self.navigationController?.navigationBar.standardAppearance
-            self.navigationController?.navigationBar.scrollEdgeAppearance = standard
-            
-        }
-    }
-    
     @IBAction func toggleSliderSetting(_ sender: Any) {
         // Set smooth slider default value
-        let currentValue = defaults.bool(forKey: SLIDER_SETTING)
+        let currentValue = defaults.bool(forKey: Constants.Storyboard.sliderSetting)
         
         if currentValue {
-            defaults.set(false, forKey: SLIDER_SETTING)
+            defaults.set(false, forKey: Constants.Storyboard.sliderSetting)
         }
         else {
-            defaults.set(true, forKey: SLIDER_SETTING)
+            defaults.set(true, forKey: Constants.Storyboard.sliderSetting)
         }
         
         // Force UserDefaults to save.

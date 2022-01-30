@@ -31,7 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
     
-    // Couldn't figure out how to lock in portrait mode without th ecode below...
+    // Couldn't figure out how to lock in portrait mode without the code below...
     //https://stackoverflow.com/questions/40413567/overriding-shouldautorotate-not-working-in-swift-3
     var orientationLock = UIInterfaceOrientationMask.all
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
