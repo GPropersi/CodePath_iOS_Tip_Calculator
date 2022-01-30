@@ -1,11 +1,10 @@
 //
 //  ViewController.swift
-//  Prework
+//
 //
 //  Created by Giovanni Propersi on 12/27/21.
-//
-//Icon = https://icons8.com/icon/113854/money
-// TODO - Clean up free functions, replace with methods or properties
+//  ViewController for main screen of Tip Calculator App. Where the tip gets calculated.
+//  Icon = https://icons8.com/icon/113854/money
 
 import UIKit
 
@@ -90,6 +89,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         AppDelegate.AppUtility.lockOrientation(.portrait)
     }
     
+    // MARK: - Checks if user sat on settings screen longer than 10 minutes
     @IBSegueAction func changeViews(_ coder: NSCoder) -> SettingsViewController? {
         // Used to slide in initial text again if time has passed while on setting screen
         defaults.set(true, forKey: Constants.Storyboard.changedScreens)
@@ -99,6 +99,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         return SettingsViewController(coder: coder)
     }
     
+    // MARK: - Timer to insert stored bill if less than 10 minutes have passed
     func checkIfTenMinutesSinceLastEntry(previousTime lastBillTime: Int) {
         // Check if 10 minutes passed since last entry, if not then keep last bill in input
         let currentTime = Int(Date().timeIntervalSince1970)
@@ -136,170 +137,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    @IBAction func getTipPerc(_ sender: Any) {
-        // Capture the user chosen percentage from the slider
-        // Recalculates tip/bill based on new chosen tip percentage
-        // Sets slider to rounded value so it 'clicks' into place
-        
-        let smoothSliderSetting = defaults.bool(forKey: Constants.Storyboard.sliderSetting)
-        let sliderTip = Int(round(tipPercentSlider.value * 100))
-        let sliderRoundedValue = Float(sliderTip) / 100.0
-        if !smoothSliderSetting {
-            tipPercentSlider.value = sliderRoundedValue
-        }
-        tipPercentOutput.setTipPercentOutput(sliderTip)
-        
-        let lastBill = convertToDecimalFromCurrency(billAmountTextField.text!)
-
-        calculateTip(lastBill)
-    }
-
-    @IBAction func validateBillInputs(_ textField: UITextField) {
-        // Calculates the tip based on the total Bill and selected tip amount. Responds directly to editing of the bill amount.
-        
-        let currencyFormatter = getCurrencyFormatter()
-
-        let currencySymbol: String = currencyFormatter.currencySymbol!
-        let decimalSymbol: String = currencyFormatter.decimalSeparator!
-        let groupingSymbol: String = currencyFormatter.groupingSeparator!
-        
-        let everythingIsHidden = defaults.bool(forKey: Constants.Storyboard.emptyBill)
-        let lastEnteredBillString = defaults.string(forKey: Constants.Storyboard.lastBill) ?? convertDecimalToCurrency(0.0)
-        let lastEnteredBillDecimalAsString: String = defaults.string(forKey: Constants.Storyboard.lastBillDecimal) ?? "0.0"
-        let lastEnteredBillDecimalFromString: Decimal = Decimal(string: lastEnteredBillDecimalAsString)!
-
-        var billAmount = billAmountTextField.text!
-        
-        let containsInvalidChars : Bool = validateCharactersAreCurrencyOnly(billAmount, currencySymbol, decimalSymbol, groupingSymbol)
-        
-        // Validate inputs for currency values
-        if containsInvalidChars {
-            billAmountTextField.text = lastEnteredBillString
-            return
-        }
-        
-        let lastBillLength = lastEnteredBillString.count
-        
-        var userPressedDelete: Bool
-        
-        if lastBillLength > billAmount.count && !everythingIsHidden {
-            // Length of current input is shorter than before -> user pressed delete
-            userPressedDelete = true
-        }
-        else {
-            userPressedDelete = false
-        }
-        
-        if everythingIsHidden {
-            // Slide in all inputs if everything is hidden after user begins to type in values
-            defaults.set(false, forKey: Constants.Storyboard.emptyBill)
-            self.view.slideInFromRightAndHidePrompt(prompt: enterBillText, leftConstraint: movableLeftEdge, rightConstraint: movableRightEdge)
-            
-            let originalMargins: [CGFloat] = defaults.object(forKey: Constants.Storyboard.originalMargin) as! [CGFloat]
-            self.view.resetLayoutMargins(leftConstraint: movableLeftEdge, rightConstraint: movableRightEdge, originalMargins: originalMargins)
-        }
-        
-        billAmount = billAmount.replacingOccurrences(of: currencySymbol, with: "")
-        billAmount = billAmount.replacingOccurrences(of: groupingSymbol, with: "")
-        var billAmountToDecimal: Decimal
-        
-        if userPressedDelete {
-            // Slide digits over one to the right
-            if !billAmount.contains(decimalSymbol) {
-                billAmountToDecimal = Decimal(string: billAmount) ?? 0
-            }
-            else {
-                billAmountToDecimal = (Decimal(string: billAmount) ?? 0) / 10
-            }
-        }
-        
-        else {
-            // Slide digits over to the left
-            if !billAmount.contains(decimalSymbol) {
-                // Certain currencies contain no decimal, just shift over
-                billAmountToDecimal = Decimal(string: billAmount)!
-            }
-            else if lastEnteredBillDecimalFromString == (Decimal(string: billAmount) ?? 0) {
-                // Off chance that user switches to a currency that doesn't use decimals.
-                // Delete would then multiply by 10 instead since previous bill would've been
-                // longer. i.e. YEN 10000 is shorter than $10000.00, so deleting with locale as
-                // USD would make it $100000.00
-                if billAmount.count > lastEnteredBillDecimalAsString.count {
-                    // Occurs when user adds a 0, so shift values to left
-                    
-                    billAmountToDecimal = Decimal(string: billAmount)! * 10
-                }
-                else {
-                    billAmountToDecimal = Decimal(string: billAmount)! / 10
-                }
-            }
-            else {
-                // When value contains a decimal and user adds a value to the end, shift values to left
-                
-                billAmountToDecimal = Decimal(string: billAmount)! * 10
-            }
-        }
-
-        let billAmountToString = currencyFormatter.string(from: NSDecimalNumber(decimal: billAmountToDecimal))
-
-        billAmountTextField.text = billAmountToString
-        calculateTip(billAmountToDecimal)
-        
-        defaults.set(Int(Date().timeIntervalSince1970), forKey: Constants.Storyboard.lastBillTimeKey)
-        defaults.set(billAmountToString, forKey: Constants.Storyboard.lastBill)
-        defaults.set(billAmountToDecimal.formattedAmount, forKey: Constants.Storyboard.lastBillDecimal)
-  
-        // Force UserDefaults to save.
-        defaults.synchronize()
-    }
-    
-    func getCurrencyFormatter() -> NumberFormatter {
-        // Returns a formatter for currency
-        let currencyFormatter = NumberFormatter()
-        currencyFormatter.usesGroupingSeparator = true
-        currencyFormatter.numberStyle = .currency
-        // Localize
-        currencyFormatter.currencyCode = defaults.string(forKey: Constants.Storyboard.currencySelection)
-        return currencyFormatter
-    }
-    
-    func convertDecimalToCurrency(_ input: Decimal) -> String {
-        // Converts decimal to string using currencyFormatter
-        let currencyFormatter = getCurrencyFormatter()
-        
-        return currencyFormatter.string(from: NSDecimalNumber(decimal: input))!
-    }
-    
-    
-    func convertToDecimalFromCurrency(_ stringInput: String) -> Decimal {
-        // Converts from currency to decimal
-        let currencyFormatter = getCurrencyFormatter()
-        
-        let currencySymbol: String = currencyFormatter.currencySymbol!
-        let groupingSymbol: String = currencyFormatter.groupingSeparator!
-        
-        var stringInputModded = stringInput
-        
-        stringInputModded = stringInputModded.replacingOccurrences(of: currencySymbol, with: "")
-        stringInputModded = stringInputModded.replacingOccurrences(of: groupingSymbol, with: "")
-
-        return Decimal(string: stringInputModded)!
-    }
-    
-    func validateCharactersAreCurrencyOnly(_ userInput: String, _ currencySymbol: String, _ decimalSep: String, _ groupingSep: String) -> Bool {
-        // Validates user input to prevent copy-pasting non-currency values
-        // Provides true if values in string are only related to the locale's currency
-        let validCharacters = CharacterSet.init(charactersIn: "1234567890" + currencySymbol + decimalSep + groupingSep).union(CharacterSet.whitespaces)
-        let userInputSet : CharacterSet = CharacterSet.init(charactersIn: userInput)
-        
-        if userInputSet.isSubset(of: validCharacters) {
-            return false
-        }
-        else {
-            return true
-        }
-    }
-    
+    // MARK: - Calculate the tip and total to be displayed
     func calculateTip(_ bill: Decimal) {
         // Calculates tip and total based on input values
         // Get tip by multiplying bill by tip percentage
@@ -317,5 +155,4 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Update the total label
         totalLabel.text = convertDecimalToCurrency(total)
     }
-    
 }

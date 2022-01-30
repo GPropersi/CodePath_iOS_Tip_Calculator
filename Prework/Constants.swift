@@ -3,9 +3,8 @@
 //  Tip Calc 3000
 //
 //  Created by Giovanni Propersi on 1/29/22.
-//  Hardcoded strings stored here.
+//  Hardcoded strings stored here in a struct.
 
-import Foundation
 import UIKit
 
 struct Constants {
