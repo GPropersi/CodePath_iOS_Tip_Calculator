@@ -75,7 +75,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
         else {
             // Slides everything away on first time
-            billAmountTextField.text = convertDecimalToCurrency(0.0)
+            billAmountTextField.text = convertDecimalToCurrencyString(0.0)
             self.view.hideEverythingBelowBill(leftConstraint: movableLeftEdge, rightConstrant: movableRightEdge)
             defaults.set(true, forKey: Constants.Storyboard.emptyBill)
             defaults.synchronize()
@@ -106,11 +106,11 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         if currentTime - lastBillTime > 600 {
             // More than 10 minutes have passed since last restart, use empty bill
-            billAmountTextField.text = convertDecimalToCurrency(0.0)
+            billAmountTextField.text = convertDecimalToCurrencyString(0.0)
             self.view.hideEverythingBelowBill(leftConstraint: movableLeftEdge, rightConstrant: movableRightEdge)
             
             defaults.set(true, forKey: Constants.Storyboard.emptyBill)
-            defaults.set(convertDecimalToCurrency(0.0), forKey: Constants.Storyboard.lastBill)
+            defaults.set(convertDecimalToCurrencyString(0.0), forKey: Constants.Storyboard.lastBill)
             
             // Force UserDefaults to save.
             defaults.synchronize()
@@ -132,7 +132,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
             self.enterBillText.alpha = 0
             let lastBillDecimalAsString: String = defaults.string(forKey: Constants.Storyboard.lastBillDecimal) ?? "0.0"
             let lastBillDecimal: Decimal = Decimal(string: lastBillDecimalAsString)!
-            billAmountTextField.text = convertDecimalToCurrency(lastBillDecimal)
+            billAmountTextField.text = convertDecimalToCurrencyString(lastBillDecimal)
             calculateTip(lastBillDecimal)
         }
     }
@@ -150,9 +150,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         let total = bill + tip
 
         // Update the tip label
-        tipAmountLabel.text = convertDecimalToCurrency(tip)
+        tipAmountLabel.text = convertDecimalToCurrencyString(tip)
         
         // Update the total label
-        totalLabel.text = convertDecimalToCurrency(total)
+        totalLabel.text = convertDecimalToCurrencyString(total)
     }
 }
