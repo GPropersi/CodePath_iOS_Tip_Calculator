@@ -20,7 +20,7 @@ extension ViewController {
         return currencyFormatter
     }
     
-    func convertDecimalToCurrency(_ input: Decimal) -> String {
+    func convertDecimalToCurrencyString(_ input: Decimal) -> String {
         // Converts decimal to string using currencyFormatter
         let currencyFormatter = getCurrencyFormatter()
         

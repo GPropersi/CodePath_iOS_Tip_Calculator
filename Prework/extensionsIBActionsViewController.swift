@@ -37,7 +37,7 @@ extension ViewController {
         let groupingSymbol: String = currencyFormatter.groupingSeparator
         
         let everythingIsHidden = defaults.bool(forKey: Constants.Storyboard.emptyBill)
-        let lastEnteredBillString = defaults.string(forKey: Constants.Storyboard.lastBill) ?? convertDecimalToCurrency(0.0)
+        let lastEnteredBillString = defaults.string(forKey: Constants.Storyboard.lastBill) ?? convertDecimalToCurrencyString(0.0)
         let lastEnteredBillDecimalAsString = defaults.string(forKey: Constants.Storyboard.lastBillDecimal) ?? "0.0"
         let lastEnteredBillDecimal = Decimal(string: lastEnteredBillDecimalAsString)!
 
@@ -46,8 +46,8 @@ extension ViewController {
         let containsInvalidChars : Bool = validateCharactersAreCurrencyOnly(billAmount, currencySymbol, decimalSymbol, groupingSymbol)
         
         // Validate inputs for currency values
-        if containsInvalidChars {
-            billAmountTextField.text = lastEnteredBillString
+        guard !containsInvalidChars else {
+            billAmountTextField.text = convertDecimalToCurrencyString(lastEnteredBillDecimal)
             return
         }
         
@@ -76,11 +76,9 @@ extension ViewController {
         billAmount = billAmount.replacingOccurrences(of: groupingSymbol, with: "")
         var billAmountToDecimal: Decimal = Decimal(string: billAmount) ?? 0.0
         
-        if userPressedDelete {
+        if userPressedDelete && billAmount.contains(decimalSymbol){
             // Slide digits over one to the right
-            if billAmount.contains(decimalSymbol) {
-                billAmountToDecimal /= 10
-            }
+            billAmountToDecimal /= 10
         }
         
         else if lastEnteredBillDecimal == billAmountToDecimal {
